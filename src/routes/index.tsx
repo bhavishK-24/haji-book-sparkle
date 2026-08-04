@@ -11,7 +11,7 @@ import {
 import heroImage from "@/assets/hero-cleaning.jpg";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { COMPANY, SERVICES } from "@/lib/company";
+import { BUSINESS_SERVICES, COMPANY, RETAIL_SERVICES } from "@/lib/company";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -65,16 +65,16 @@ function Home() {
           />
           <div className="container-page relative grid gap-10 py-20 lg:grid-cols-[1.1fr_0.9fr] lg:py-28">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-accent">
+              <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-accent-foreground">
                 <BadgeCheck className="size-3.5" /> Dubai Municipality approved
               </span>
               <h1 className="mt-6 max-w-2xl font-display text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl">
-                Spotless offices, villas and warehouses across the UAE.
+                Spotless homes and facilities across the UAE.
               </h1>
               <p className="mt-5 max-w-xl text-base text-primary-foreground/80 sm:text-lg">
-                {COMPANY.name} delivers deep cleaning, AC maintenance, disinfection,
-                marble polishing, pest control and monthly manpower — booked in a
-                couple of taps.
+                {COMPANY.name} cleans apartments and villas — book online in a
+                couple of taps — and handles water tanks, facility contracts and
+                manpower for business on a quoted basis.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
@@ -107,28 +107,54 @@ function Home() {
         </section>
 
         <section className="container-page py-20">
-          <span className="eyebrow">What we do</span>
+          <span className="eyebrow">For homes — book online</span>
           <h2 className="mt-2 max-w-2xl font-display text-3xl font-bold sm:text-4xl">
-            One contractor for cleaning, maintenance and manpower
+            Home services you can book in a couple of taps
           </h2>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {SERVICES.map((service) => (
+            {RETAIL_SERVICES.map((service) => (
               <article key={service.slug} className="surface-card flex flex-col p-6">
                 <h3 className="font-display text-base font-bold">{service.name}</h3>
                 {service.approved ? (
-                  <span className="mt-2 w-fit rounded-full bg-accent/20 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-accent-foreground">
+                  <span className="mt-2 w-fit rounded-full bg-accent px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-accent-foreground">
                     Municipality approved
                   </span>
                 ) : null}
                 <p className="mt-3 flex-1 text-sm text-muted-foreground">{service.summary}</p>
                 <Link
                   to="/book"
+                  search={{ service: service.name }}
                   className="mt-4 text-sm font-semibold text-primary hover:underline"
                 >
                   Book this service →
                 </Link>
               </article>
             ))}
+          </div>
+
+          <div className="mt-16 surface-card p-8">
+            <span className="eyebrow">For business — quoted on site</span>
+            <h2 className="mt-2 font-display text-2xl font-bold sm:text-3xl">
+              Buildings, contractors and facility contracts
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
+              Water tank cleaning, post-handover cleaning, facility contracts and
+              monthly manpower are scoped on site rather than booked online.
+            </p>
+            <ul className="mt-6 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+              {BUSINESS_SERVICES.map((service) => (
+                <li key={service.slug} className="flex items-start gap-2">
+                  <BadgeCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+                  {service.name}
+                </li>
+              ))}
+            </ul>
+            <Link
+              to="/business"
+              className="mt-7 inline-flex rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary-deep"
+            >
+              Request a business quote
+            </Link>
           </div>
         </section>
 

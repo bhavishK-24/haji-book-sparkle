@@ -1,17 +1,24 @@
 export const COMPANY = {
-  name: "Haji Ahli Cleaning & Maintenance",
+  name: "Haji Ahli Cleaning & Maintenance Services L.L.C.",
   shortName: "Haji Ahli",
-  tagline: "Dubai Municipality approved cleaning & maintenance across the UAE",
-  phone: "+971 50 000 0000",
-  whatsapp: "+971 50 000 0000",
-  email: "info@hajiahli.ae",
+  tagline: "Specialized in water tank cleaning — cleaning & maintenance across the UAE",
+  phone: "+971 50 436 3875",
+  altPhone: "+971 55 272 3023",
+  landline: "+971 4 273 8611",
+  whatsapp: "+971 50 436 3875",
+  email: "enquiry@hajiahliclean.com",
+  website: "www.hajiahliclean.com",
+  address: "P.O. Box 79201, Dubai, U.A.E.",
   hours: "Saturday – Thursday, 8:00 – 20:00",
 } as const;
+
+export type Audience = "retail" | "business";
 
 export type Service = {
   slug: string;
   name: string;
   summary: string;
+  audience: Audience;
   approved?: boolean;
 };
 
@@ -20,65 +27,86 @@ export const SERVICES: Service[] = [
     slug: "deep-cleaning",
     name: "Deep Cleaning",
     summary:
-      "Offices, flats, villas, warehouses and labour accommodation cleaned top to bottom by trained crews.",
-  },
-  {
-    slug: "glue-removal-polishing",
-    name: "Glue Removal & Polishing",
-    summary:
-      "Post-handover adhesive, paint and cement residue removal followed by a restorative polish.",
+      "Flats, villas and homes cleaned top to bottom by trained crews — kitchens, bathrooms, bedrooms and balconies.",
+    audience: "retail",
   },
   {
     slug: "window-cleaning",
     name: "Internal & External Window Cleaning",
     summary:
-      "Streak-free glass, frames and tracks, including safe access for high-rise external facades.",
+      "Streak-free glass, frames and tracks for apartments and villas, including reachable external faces.",
+    audience: "retail",
   },
   {
     slug: "ac-service",
     name: "AC Service & Maintenance",
     summary:
-      "Coil and duct cleaning, filter replacement, gas top-up and scheduled preventive maintenance.",
+      "Coil and filter cleaning, gas top-up and preventive servicing for home split and ducted units.",
+    audience: "retail",
   },
   {
-    slug: "water-tank-cleaning",
-    name: "Water Tank Cleaning",
+    slug: "carpet-shampooing",
+    name: "Carpet & Sofa Shampooing",
     summary:
-      "Draining, scrubbing, disinfection and reporting to municipality standards for potable water tanks.",
-    approved: true,
+      "Hot water extraction and shampooing for carpets, rugs, mattresses and sofas at home.",
+    audience: "retail",
   },
   {
     slug: "sanitation-disinfection",
     name: "Sanitation, Disinfection & Sterilization",
     summary:
-      "Approved fogging and surface disinfection for offices, clinics, schools and residences.",
+      "Approved fogging and surface disinfection for homes and small offices.",
+    audience: "retail",
     approved: true,
+  },
+  {
+    slug: "pest-control",
+    name: "Pest Control Services",
+    summary:
+      "Targeted treatment for cockroaches, bed bugs, ants, rodents and termites with a follow-up visit.",
+    audience: "retail",
   },
   {
     slug: "marble-grinding",
     name: "Marble Grinding & Polishing",
     summary:
       "Diamond grinding, honing and crystallisation to bring dull marble floors back to a mirror finish.",
+    audience: "retail",
+  },
+  {
+    slug: "water-tank-cleaning",
+    name: "Water Tank Cleaning",
+    summary:
+      "Draining, scrubbing, disinfection and municipality-standard reporting for building and community potable water tanks.",
+    audience: "business",
+    approved: true,
+  },
+  {
+    slug: "glue-removal-polishing",
+    name: "Glue Removal & Post-Handover Cleaning",
+    summary:
+      "Adhesive, paint and cement residue removal plus restorative polishing for contractors and developers after handover.",
+    audience: "business",
+  },
+  {
+    slug: "commercial-deep-cleaning",
+    name: "Commercial & Facility Deep Cleaning",
+    summary:
+      "Offices, retail units, warehouses, schools and labour accommodation on scheduled or one-off contracts.",
+    audience: "business",
   },
   {
     slug: "manpower-supply",
     name: "Monthly Manpower Supply",
     summary:
-      "Helpers, cleaners, office boys and watchmen supplied on flexible monthly contracts.",
-  },
-  {
-    slug: "carpet-shampooing",
-    name: "Carpet Shampooing",
-    summary:
-      "Hot water extraction and shampooing for carpets, rugs, sofas and office upholstery.",
-  },
-  {
-    slug: "pest-control",
-    name: "Pest Control Services",
-    summary:
-      "Targeted treatment for cockroaches, bed bugs, ants, rodents and termites with follow-up visits.",
+      "Helpers, cleaners, office boys and watchmen supplied on flexible monthly contracts with supervision.",
+    audience: "business",
   },
 ];
+
+export const RETAIL_SERVICES = SERVICES.filter((s) => s.audience === "retail");
+export const BUSINESS_SERVICES = SERVICES.filter((s) => s.audience === "business");
+export const BOOKABLE_SERVICE_NAMES = RETAIL_SERVICES.map((s) => s.name);
 
 export const EMIRATES = [
   "Dubai",
@@ -93,10 +121,8 @@ export const EMIRATES = [
 export const PROPERTY_TYPES = [
   "Apartment / Flat",
   "Villa",
-  "Office",
-  "Retail / Shop",
-  "Warehouse",
-  "Labour Accommodation",
+  "Townhouse",
+  "Studio",
   "Other",
 ] as const;
 
