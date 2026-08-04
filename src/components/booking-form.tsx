@@ -61,8 +61,14 @@ export function BookingForm({ defaultService }: { defaultService?: string }) {
       className="surface-card p-6 sm:p-8"
       onSubmit={(event) => {
         event.preventDefault();
-        if (!date) return toast.error("Please pick a date on the calendar.");
-        if (!slot) return toast.error("Please choose a time slot.");
+        if (!date) {
+          toast.error("Please pick a date on the calendar.");
+          return;
+        }
+        if (!slot) {
+          toast.error("Please choose a time slot.");
+          return;
+        }
         const form = new FormData(event.currentTarget);
         mutation.mutate({
           customer_name: String(form.get("customer_name") ?? ""),
