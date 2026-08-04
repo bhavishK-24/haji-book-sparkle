@@ -1,12 +1,18 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { BOOKABLE_SERVICE_NAMES } from "@/lib/company";
 
 const bookingSchema = z.object({
   customer_name: z.string().trim().min(2).max(100),
   phone: z.string().trim().min(7).max(30),
   email: z.string().trim().email().max(255).optional().or(z.literal("")),
-  service: z.string().trim().min(2).max(120),
+  service: z
+    .string()
+    .trim()
+    .refine((v) => BOOKABLE_SERVICE_NAMES.includes(v), {
+      message: "This service is arranged by our team — please request a quote instead.",
+    }),
   property_type: z.string().trim().max(60).optional().or(z.literal("")),
   emirate: z.string().trim().min(2).max(60),
   address: z.string().trim().max(400).optional().or(z.literal("")),

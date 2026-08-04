@@ -5,7 +5,7 @@ import { CalendarCheck, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
-import { EMIRATES, PROPERTY_TYPES, SERVICES, TIME_SLOTS } from "@/lib/company";
+import { EMIRATES, PROPERTY_TYPES, RETAIL_SERVICES, TIME_SLOTS } from "@/lib/company";
 import { createBooking } from "@/lib/bookings.functions";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,11 @@ export function BookingForm({ defaultService }: { defaultService?: string }) {
   const submit = useServerFn(createBooking);
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [slot, setSlot] = useState<string>("");
-  const [service, setService] = useState(defaultService ?? SERVICES[0]!.name);
+  const [service, setService] = useState(
+    RETAIL_SERVICES.some((s) => s.name === defaultService)
+      ? defaultService!
+      : RETAIL_SERVICES[0]!.name,
+  );
   const [done, setDone] = useState(false);
 
   const mutation = useMutation({
@@ -125,7 +129,7 @@ export function BookingForm({ defaultService }: { defaultService?: string }) {
               value={service}
               onChange={(e) => setService(e.target.value)}
             >
-              {SERVICES.map((s) => (
+              {RETAIL_SERVICES.map((s) => (
                 <option key={s.slug} value={s.name}>
                   {s.name}
                 </option>
