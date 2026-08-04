@@ -69,12 +69,12 @@ function Home() {
                 <BadgeCheck className="size-3.5" /> Dubai Municipality approved
               </span>
               <h1 className="mt-6 max-w-2xl font-display text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl">
-                Spotless offices, villas and warehouses across the UAE.
+                Spotless homes and facilities across the UAE.
               </h1>
               <p className="mt-5 max-w-xl text-base text-primary-foreground/80 sm:text-lg">
-                {COMPANY.name} delivers deep cleaning, AC maintenance, disinfection,
-                marble polishing, pest control and monthly manpower — booked in a
-                couple of taps.
+                {COMPANY.name} cleans apartments and villas — book online in a
+                couple of taps — and handles water tanks, facility contracts and
+                manpower for business on a quoted basis.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
