@@ -1,0 +1,91 @@
+import { Link, useRouterState } from "@tanstack/react-router";
+import { Menu, Phone, X } from "lucide-react";
+import { useState } from "react";
+import { COMPANY } from "@/lib/company";
+import { cn } from "@/lib/utils";
+
+const NAV = [
+  { to: "/", label: "Home" },
+  { to: "/services", label: "Services" },
+  { to: "/book", label: "Book a slot" },
+];
+
+export function SiteHeader() {
+  const [open, setOpen] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur">
+      <div className="container-page flex h-16 items-center justify-between gap-4">
+        <Link to="/" className="flex items-center gap-3">
+          <span className="grid size-9 place-items-center rounded-lg bg-primary font-display text-sm font-bold text-primary-foreground">
+            HA
+          </span>
+          <span className="leading-tight">
+            <span className="block font-display text-sm font-bold tracking-tight">
+              Haji Ahli
+            </span>
+            <span className="block text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
+              Cleaning &amp; Maintenance
+            </span>
+          </span>
+        </Link>
+
+        <nav className="hidden items-center gap-1 md:flex">
+          {NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                "rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
+                pathname === item.to && "text-foreground",
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+          <a
+            href={`tel:${COMPANY.phone.replace(/\s/g, "")}`}
+            className="ml-2 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-deep"
+          >
+            <Phone className="size-4" />
+            Call us
+          </a>
+        </nav>
+
+        <button
+          type="button"
+          aria-label="Toggle menu"
+          onClick={() => setOpen((v) => !v)}
+          className="grid size-10 place-items-center rounded-md border border-border md:hidden"
+        >
+          {open ? <X className="size-5" /> : <Menu className="size-5" />}
+        </button>
+      </div>
+
+      {open ? (
+        <div className="border-t border-border bg-background md:hidden">
+          <div className="container-page flex flex-col gap-1 py-3">
+            {NAV.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setOpen(false)}
+                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
+              >
+                {item.label}
+              </Link>
+            ))}
+            <a
+              href={`tel:${COMPANY.phone.replace(/\s/g, "")}`}
+              className="mt-1 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+            >
+              <Phone className="size-4" />
+              {COMPANY.phone}
+            </a>
+          </div>
+        </div>
+      ) : null}
+    </header>
+  );
+}
