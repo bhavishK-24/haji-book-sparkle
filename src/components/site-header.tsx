@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Menu, Phone, X } from "lucide-react";
 import { useState } from "react";
+import logo from "@/assets/haji-ahli-logo.png.asset.json";
 import { COMPANY } from "@/lib/company";
 import { cn } from "@/lib/utils";
 
@@ -8,6 +9,7 @@ const NAV = [
   { to: "/", label: "Home" },
   { to: "/services", label: "Services" },
   { to: "/book", label: "Book a slot" },
+  { to: "/business", label: "For business" },
 ];
 
 export function SiteHeader() {
@@ -18,10 +20,14 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-3">
-          <span className="grid size-9 place-items-center rounded-lg bg-primary font-display text-sm font-bold text-primary-foreground">
-            HA
-          </span>
-          <span className="leading-tight">
+          <img
+            src={logo.url}
+            alt="Haji Ahli Cleaning Services logo"
+            width={120}
+            height={120}
+            className="h-11 w-auto"
+          />
+          <span className="leading-tight sm:hidden lg:block">
             <span className="block font-display text-sm font-bold tracking-tight">
               Haji Ahli
             </span>
