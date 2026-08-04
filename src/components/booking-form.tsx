@@ -18,7 +18,7 @@ export function BookingForm({ defaultService }: { defaultService?: string }) {
   const submit = useServerFn(createBooking);
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [slot, setSlot] = useState<string>("");
-  const [service, setService] = useState(defaultService ?? SERVICES[0].name);
+  const [service, setService] = useState(defaultService ?? SERVICES[0]!.name);
   const [done, setDone] = useState(false);
 
   const mutation = useMutation({
