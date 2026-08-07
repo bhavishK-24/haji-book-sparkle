@@ -5,7 +5,7 @@ import { BUSINESS_SERVICES, COMPANY, RETAIL_SERVICES } from "@/lib/company";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-border bg-primary-deep text-primary-foreground">
+    <footer className="border-t border-border bg-primary-deep text-primary-foreground">
       <div className="container-page grid gap-10 py-14 md:grid-cols-3">
         <div>
           <span className="inline-flex rounded-lg bg-card p-3">
