@@ -134,3 +134,38 @@ export const TIME_SLOTS = [
   "16:00 – 18:00",
   "18:00 – 20:00",
 ] as const;
+
+/** Headline proof points shown on the homepage — edit these to match reality. */
+export const STATS = [
+  { value: "15+", label: "Years operating in the UAE" },
+  { value: "4,000+", label: "Jobs completed" },
+  { value: "< 2 hrs", label: "Average quote response" },
+  { value: "4.8 / 5", label: "Average client rating" },
+] as const;
+
+/** Sectors served. */
+export const INDUSTRIES = [
+  { name: "Hotels & hospitality", note: "Back-of-house, guest floors, tanks" },
+  { name: "Offices & towers", note: "Nightly and scheduled contracts" },
+  { name: "Healthcare & clinics", note: "Disinfection to approved protocols" },
+  { name: "Schools & nurseries", note: "Term-break deep cleans" },
+  { name: "Retail & F&B", note: "Kitchens, ducts, front of house" },
+  { name: "Warehouses & industrial", note: "High-level and floor care" },
+  { name: "Villas & residences", note: "Bookable online" },
+  { name: "Government & community", note: "Municipality-standard reporting" },
+] as const;
+
+/**
+ * Client wordmarks for the trust strip.
+ * Replace with real client names/logos once approvals are in place.
+ */
+export const CLIENT_WORDMARKS = [
+  "Hospitality Group",
+  "Business Bay Tower",
+  "Marina Residences",
+  "Al Quoz Logistics",
+  "Jumeirah Clinics",
+  "Downtown Retail",
+  "Emirates Schools",
+  "Palm Villas",
+] as const;

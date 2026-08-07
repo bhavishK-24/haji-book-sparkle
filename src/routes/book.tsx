@@ -51,7 +51,7 @@ function BookPage() {
         </section>
 
         <section className="container-page py-14">
-          <BookingForm defaultService={service} />
+          <BookingForm {...(service ? { defaultService: service } : {})} />
         </section>
       </main>
       <SiteFooter />
