@@ -120,8 +120,8 @@ function Home() {
                 <BadgeCheck className="size-3.5 text-accent" />
                 Dubai Municipality approved · Est. in the UAE
               </span>
-              <h1 className="display-xl mt-7 max-w-3xl">
-                Facilities that never look
+              <h1 className="display-xl mt-7 max-w-4xl text-balance">
+                <span className="block">Facilities that never look</span>
                 <span className="block text-primary-foreground/55">
                   like they were cleaned.
                 </span>
