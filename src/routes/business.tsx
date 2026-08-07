@@ -2,6 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Building2, Mail, PhoneCall } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { SectionHeader } from "@/components/section-header";
+import { ServiceCard } from "@/components/service-card";
+import { Button } from "@/components/ui/button";
 import { BUSINESS_SERVICES, COMPANY } from "@/lib/company";
 
 export const Route = createFileRoute("/business")({
@@ -33,67 +36,51 @@ function BusinessPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main>
-        <section className="bg-primary-deep py-16 text-primary-foreground">
-          <div className="container-page">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-primary-foreground/70">
+        <section className="bg-primary-deep text-primary-foreground">
+          <div className="container-page py-20 sm:py-24">
+            <span className="eyebrow inline-flex items-center gap-2 text-primary-foreground/70">
               <Building2 className="size-3.5" /> For business
             </span>
-            <h1 className="mt-3 max-w-3xl font-display text-4xl font-bold sm:text-5xl">
+            <h1 className="display-lg mt-5 max-w-3xl">
               Contract cleaning, water tanks and manpower for UAE facilities
             </h1>
-            <p className="mt-4 max-w-2xl text-sm text-primary-foreground/80">
+            <p className="lede mt-4 max-w-2xl text-primary-foreground/80">
               Commercial work is scoped on site, not booked online. Send us the
               details and our coordinator arranges a survey and a fixed written
               quote.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href={`tel:${tel}`}
-                className="inline-flex items-center gap-2 rounded-md bg-accent px-6 py-3 text-sm font-bold text-accent-foreground"
+              <Button asChild variant="cta" size="pill" className="font-bold">
+                <a href={`tel:${tel}`}>
+                  <PhoneCall className="size-4" />
+                  {COMPANY.phone}
+                </a>
+              </Button>
+              <Button
+                asChild
+                variant="cta-outline"
+                size="pill"
+                className="font-semibold text-primary-foreground"
               >
-                <PhoneCall className="size-4" />
-                {COMPANY.phone}
-              </a>
-              <a
-                href={`mailto:${COMPANY.email}?subject=Commercial%20cleaning%20enquiry`}
-                className="inline-flex items-center gap-2 rounded-md border border-primary-foreground/30 px-6 py-3 text-sm font-semibold hover:bg-primary-foreground/10"
-              >
-                <Mail className="size-4" />
-                Request a quote
-              </a>
+                <a href={`mailto:${COMPANY.email}?subject=Commercial%20cleaning%20enquiry`}>
+                  <Mail className="size-4" />
+                  Request a quote
+                </a>
+              </Button>
             </div>
           </div>
         </section>
 
-        <section className="container-page py-16">
-          <span className="eyebrow">Business services</span>
-          <h2 className="mt-2 font-display text-3xl font-bold">
-            Scoped and quoted by our team
-          </h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
+        <section className="container-page section-y">
+          <SectionHeader eyebrow="Business services" title="Scoped and quoted by our team" />
+          <div className="mt-12 grid gap-4 md:grid-cols-2">
             {BUSINESS_SERVICES.map((service) => (
-              <article key={service.slug} className="surface-card flex flex-col p-7">
-                <h3 className="font-display text-lg font-bold">{service.name}</h3>
-                {service.approved ? (
-                  <span className="mt-2 w-fit rounded-full bg-accent px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-accent-foreground">
-                    Municipality approved
-                  </span>
-                ) : null}
-                <p className="mt-3 flex-1 text-sm text-muted-foreground">
-                  {service.summary}
-                </p>
-                <a
-                  href={`mailto:${COMPANY.email}?subject=${encodeURIComponent(`Quote request: ${service.name}`)}`}
-                  className="mt-5 w-fit rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-deep"
-                >
-                  Request a quote
-                </a>
-              </article>
+              <ServiceCard key={service.slug} service={service} variant="quote" />
             ))}
           </div>
           <p className="mt-8 text-sm text-muted-foreground">
             Looking for a home service instead?{" "}
-            <Link to="/book" className="font-semibold text-primary hover:underline">
+            <Link to="/book" className="link-underline font-semibold text-primary">
               Book a slot online
             </Link>
             .

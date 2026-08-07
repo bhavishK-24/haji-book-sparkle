@@ -95,9 +95,10 @@ export function BookingForm({ defaultService }: { defaultService?: string }) {
             mode="single"
             selected={date}
             onSelect={setDate}
-            disabled={{ before: new Date() }}
+            disabled={[{ before: new Date() }, { dayOfWeek: [5] }]}
             className="rounded-lg border border-border bg-card p-3"
           />
+          <p className="mt-2 text-xs text-muted-foreground">Closed Fridays.</p>
           <div className="mt-5">
             <span className={labelClass}>Time slot</span>
             <div className="grid grid-cols-2 gap-2">

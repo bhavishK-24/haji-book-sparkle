@@ -42,8 +42,9 @@ export function SiteHeader() {
             <Link
               key={item.to}
               to={item.to}
+              aria-current={pathname === item.to ? "page" : undefined}
               className={cn(
-                "rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-300 hover:text-foreground",
+                "rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-300 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 pathname === item.to && "text-foreground",
               )}
             >
@@ -62,22 +63,25 @@ export function SiteHeader() {
         <button
           type="button"
           aria-label="Toggle menu"
+          aria-expanded={open}
+          aria-controls="mobile-nav"
           onClick={() => setOpen((v) => !v)}
-          className="grid size-10 place-items-center rounded-full border border-border md:hidden"
+          className="grid size-10 place-items-center rounded-full border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
       </div>
 
       {open ? (
-        <div className="border-t border-border bg-background md:hidden">
+        <div id="mobile-nav" className="border-t border-border bg-background md:hidden">
           <div className="container-page flex flex-col gap-1 py-3">
             {NAV.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
+                aria-current={pathname === item.to ? "page" : undefined}
                 onClick={() => setOpen(false)}
-                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
+                className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {item.label}
               </Link>

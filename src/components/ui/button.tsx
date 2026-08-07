@@ -16,12 +16,21 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        // Marketing CTAs: reserved for the single primary conversion action
+        // (book / submit). Keep this the only solid-accent button on a page.
+        cta: "bg-accent text-accent-foreground hover:shadow-[0_12px_32px_oklch(0.52_0.2_25_/_0.35)]",
+        // Secondary marketing action (quote / navigate). Uses currentColor so
+        // it adapts to light or dark section backgrounds via the consumer's
+        // text color class.
+        "cta-outline": "border border-current/30 bg-transparent hover:bg-current/8",
       },
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-md px-8",
         icon: "h-9 w-9",
+        pill: "h-auto rounded-full px-7 py-3.5 text-sm",
+        "pill-sm": "h-auto rounded-full px-5 py-2.5 text-xs",
       },
     },
     defaultVariants: {

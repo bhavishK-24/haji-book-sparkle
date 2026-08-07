@@ -18,6 +18,9 @@ import residentialImage from "@/assets/residential-villa.jpg";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Reveal } from "@/components/reveal";
+import { SectionHeader } from "@/components/section-header";
+import { StatBlock } from "@/components/stat-block";
+import { Button } from "@/components/ui/button";
 import {
   BUSINESS_SERVICES,
   CLIENT_WORDMARKS,
@@ -132,20 +135,23 @@ function Home() {
                 supervised crews.
               </p>
               <div className="mt-10 flex flex-wrap items-center gap-3">
-                <Link
-                  to="/book"
-                  className="group inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-sm font-semibold text-accent-foreground transition-all duration-300 hover:gap-3.5 hover:shadow-[0_12px_32px_oklch(0.52_0.2_25_/_0.35)]"
+                <Button asChild variant="cta" size="pill" className="group font-semibold hover:gap-3.5">
+                  <Link to="/book">
+                    Book a service
+                    <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="cta-outline"
+                  size="pill"
+                  className="font-medium text-primary-foreground"
                 >
-                  Book a service
-                  <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                </Link>
-                <Link
-                  to="/business"
-                  className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/25 px-7 py-3.5 text-sm font-medium text-primary-foreground/90 transition-colors duration-300 hover:border-primary-foreground/60 hover:bg-primary-foreground/5"
-                >
-                  Request commercial quote
-                  <ArrowUpRight className="size-4" />
-                </Link>
+                  <Link to="/business">
+                    Request commercial quote
+                    <ArrowUpRight className="size-4" />
+                  </Link>
+                </Button>
                 <a
                   href={`tel:${tel}`}
                   className="link-underline ml-1 hidden text-sm text-primary-foreground/70 sm:inline"
@@ -164,14 +170,7 @@ function Home() {
               <p className="eyebrow">Trusted across the emirates</p>
               <dl className="mt-8 grid grid-cols-2 gap-x-10 gap-y-8">
                 {STATS.map((stat) => (
-                  <div key={stat.label}>
-                    <dt className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-                      {stat.value}
-                    </dt>
-                    <dd className="mt-1.5 text-sm leading-snug text-muted-foreground">
-                      {stat.label}
-                    </dd>
-                  </div>
+                  <StatBlock key={stat.label} value={stat.value} label={stat.label} />
                 ))}
               </dl>
             </Reveal>
@@ -199,9 +198,8 @@ function Home() {
         {/* ── Services: two distinct tracks ──────────────────── */}
         <section className="section-y">
           <div className="container-page">
-            <Reveal className="max-w-2xl">
-              <p className="eyebrow">What we do</p>
-              <h2 className="display-lg mt-5">Two ways to work with us</h2>
+            <Reveal>
+              <SectionHeader eyebrow="What we do" title="Two ways to work with us" />
             </Reveal>
 
             <div className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-border bg-border lg:grid-cols-2">
@@ -243,13 +241,17 @@ function Home() {
                       </li>
                     ))}
                   </ul>
-                  <Link
-                    to="/business"
-                    className="group mt-10 inline-flex w-fit items-center gap-2 rounded-full border border-primary-foreground/25 px-6 py-3 text-sm font-semibold transition-colors hover:bg-primary-foreground/10"
+                  <Button
+                    asChild
+                    variant="cta-outline"
+                    size="pill-sm"
+                    className="group mt-10 w-fit text-primary-foreground hover:gap-3"
                   >
-                    Request a quote
-                    <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                  </Link>
+                    <Link to="/business">
+                      Request a quote
+                      <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                    </Link>
+                  </Button>
                 </div>
               </Reveal>
 
@@ -290,13 +292,12 @@ function Home() {
                       </li>
                     ))}
                   </ul>
-                  <Link
-                    to="/book"
-                    className="group mt-10 inline-flex w-fit items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-deep"
-                  >
-                    <CalendarDays className="size-4" />
-                    Book now
-                  </Link>
+                  <Button asChild variant="cta" size="pill-sm" className="mt-10 w-fit">
+                    <Link to="/book">
+                      <CalendarDays className="size-4" />
+                      Book now
+                    </Link>
+                  </Button>
                 </div>
               </Reveal>
             </div>
@@ -349,17 +350,17 @@ function Home() {
 
         {/* ── Industries ─────────────────────────────────────── */}
         <section className="container-page section-y">
-          <Reveal className="flex flex-wrap items-end justify-between gap-6">
-            <div className="max-w-xl">
-              <p className="eyebrow">Industries</p>
-              <h2 className="display-lg mt-5">Where our crews work</h2>
-            </div>
-            <Link
-              to="/services"
-              className="link-underline text-sm font-semibold text-primary"
-            >
-              All services
-            </Link>
+          <Reveal>
+            <SectionHeader
+              layout="split"
+              eyebrow="Industries"
+              title="Where our crews work"
+              action={
+                <Link to="/services" className="link-underline text-sm font-semibold text-primary">
+                  All services
+                </Link>
+              }
+            />
           </Reveal>
 
           <ul className="mt-14 grid border-t border-border sm:grid-cols-2 lg:grid-cols-4">
@@ -389,11 +390,12 @@ function Home() {
         {/* ── Featured work / clients ────────────────────────── */}
         <section className="bg-primary-deep text-primary-foreground">
           <div className="container-page section-y">
-            <Reveal className="max-w-2xl">
-              <p className="eyebrow text-primary-foreground/50">Selected work</p>
-              <h2 className="display-lg mt-5">
-                Portfolios that stay maintained, quietly
-              </h2>
+            <Reveal>
+              <SectionHeader
+                tone="inverse"
+                eyebrow="Selected work"
+                title="Portfolios that stay maintained, quietly"
+              />
             </Reveal>
 
             <div className="mt-16 grid gap-px overflow-hidden rounded-2xl bg-primary-foreground/12 md:grid-cols-3">
@@ -446,9 +448,8 @@ function Home() {
 
         {/* ── Booking process ────────────────────────────────── */}
         <section className="container-page section-y">
-          <Reveal className="max-w-xl">
-            <p className="eyebrow">Residential booking</p>
-            <h2 className="display-lg mt-5">Four steps, no paperwork</h2>
+          <Reveal>
+            <SectionHeader eyebrow="Residential booking" title="Four steps, no paperwork" />
           </Reveal>
 
           <ol className="mt-16 grid gap-y-12 md:grid-cols-4 md:gap-x-10">
@@ -494,19 +495,20 @@ function Home() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link
-                  to="/book"
-                  className="group inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-sm font-semibold text-accent-foreground transition-all duration-300 hover:gap-3.5"
+                <Button asChild variant="cta" size="pill" className="group font-semibold hover:gap-3.5">
+                  <Link to="/book">
+                    Book a service
+                    <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="cta-outline"
+                  size="pill"
+                  className="font-medium text-primary-foreground"
                 >
-                  Book a service
-                  <ArrowRight className="size-4" />
-                </Link>
-                <Link
-                  to="/business"
-                  className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/30 px-7 py-3.5 text-sm font-medium transition-colors hover:bg-primary-foreground/10"
-                >
-                  Commercial quote
-                </Link>
+                  <Link to="/business">Commercial quote</Link>
+                </Button>
               </div>
             </div>
           </Reveal>

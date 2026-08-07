@@ -110,7 +110,7 @@ function AdminPage() {
                   <span
                     className={cn(
                       "rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide",
-                      booking.status === "new" && "bg-accent/25 text-accent-foreground",
+                      booking.status === "new" && "bg-accent/15 text-accent",
                       booking.status === "confirmed" && "bg-primary/15 text-primary",
                       booking.status === "completed" && "bg-secondary text-secondary-foreground",
                       booking.status === "cancelled" && "bg-destructive/15 text-destructive",
