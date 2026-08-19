@@ -2,47 +2,39 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   ArrowUpRight,
-  BadgeCheck,
+  Building2,
+  Home as HomeIcon,
+  Landmark,
   CalendarDays,
-  ClipboardCheck,
-  Droplets,
   PhoneCall,
-  ShieldCheck,
   Sparkles,
-  Timer,
   UserCheck,
 } from "lucide-react";
-import heroImage from "@/assets/hero-lobby.jpg";
-import commercialImage from "@/assets/commercial-tank.jpg";
-import residentialImage from "@/assets/residential-villa.jpg";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
+import { CategoryIcon } from "@/components/category-icon";
+import { MaterialsNote } from "@/components/materials-note";
 import { Reveal } from "@/components/reveal";
-import {
-  BUSINESS_SERVICES,
-  CLIENT_WORDMARKS,
-  COMPANY,
-  INDUSTRIES,
-  RETAIL_SERVICES,
-  STATS,
-} from "@/lib/company";
+import { ServicePhoto } from "@/components/service-photo";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { Button } from "@/components/ui/button";
+import { BOOKING_CATEGORIES, getCategoryPhoto } from "@/data/booking-categories";
+import { ALL_PHOTOS as PHOTOS_ALL } from "@/data/media";
+import { CLIENT_WORDMARKS, COMPANY, CORPORATE_ACCOUNTS, STATS } from "@/lib/company";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      {
-        title: "Haji Ahli Cleaning & Maintenance | Premium UAE Cleaning Company",
-      },
+      { title: "Haji Ahli Cleaning & Maintenance | Premium UAE Cleaning Company" },
       {
         name: "description",
         content:
-          "Municipality-approved cleaning and maintenance for hotels, offices, clinics, warehouses and villas across the UAE. Book residential services online or request a commercial quote.",
+          "Exceptional cleaning and maintenance for homes, developments, offices and commercial properties across the UAE. Professional in-house crews and flexible next-day bookings.",
       },
       { property: "og:title", content: "Haji Ahli Cleaning & Maintenance | UAE" },
       {
         property: "og:description",
         content:
-          "Commercial contracts and bookable residential cleaning across all seven emirates — water tanks, disinfection, AC service, deep cleaning and manpower.",
+          "Trusted by homeowners, real estate developers, construction companies, offices and commercial properties across the UAE.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -51,45 +43,95 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
+/**
+ * Headline capability groups, each backed by a photo that genuinely shows it.
+ *
+ * Each links to the booking category it depicts rather than to the full
+ * catalogue. Sending all four to `/services` meant clicking a photograph of a
+ * carpet being shampooed dropped you at the top of a thirty-five service list
+ * to find it again — the picture made a promise the link did not keep.
+ */
+const CAPABILITIES = [
+  {
+    photo: PHOTOS_ALL.villaConsoleDetail,
+    label: "Homes",
+    title: "Residential deep cleaning",
+    body: "Deep and intense packages for studios through six-bedroom villas, with the whole property covered in one visit.",
+    to: "/book/$category",
+    params: { category: "home-cleaning" },
+  },
+  {
+    photo: PHOTOS_ALL.facadeGlassPole,
+    label: "Glass",
+    title: "Windows, glass & facades",
+    body: "Internal and external glass, frames and tracks. Pole-fed and ladder access for shopfronts, atriums and full-height glazing.",
+    to: "/book/$category",
+    params: { category: "windows-glass" },
+  },
+  {
+    photo: PHOTOS_ALL.carpetShampooResidence,
+    label: "Soft furnishing",
+    title: "Carpet, sofa & mattress",
+    body: "Rotary scrubbing and hot-water extraction for carpets, upholstery and mattresses, in homes and across commercial floors.",
+    to: "/book/$category",
+    params: { category: "soft-furnishing" },
+  },
+  {
+    photo: PHOTOS_ALL.postConstructionVacuum,
+    label: "Handover",
+    title: "Post-handover & fit-out",
+    body: "Adhesive, cement and paint residue removal with restorative polishing, phased ahead of client walk-throughs.",
+    to: "/business",
+  },
+];
+
+/**
+ * Authority, not adjectives.
+ *
+ * Each point is a verifiable fact about how the company operates or who it
+ * has worked for — operating history, the client portfolio, the range of
+ * environments, the employment model. Nothing here is a self-assessment of
+ * quality, because a customer cannot check that and every competitor claims it.
+ */
 const DIFFERENTIATORS = [
   {
-    icon: ShieldCheck,
-    title: "Approved where it matters",
-    body: "Water tank cleaning and disinfection are carried out to Dubai Municipality standards, with written reports issued after every job.",
+    icon: Landmark,
+    title: `Operating in the UAE since ${COMPANY.established}`,
+    body: "Nearly two decades working across the emirates, through every kind of property the region builds — and more than 6,000 jobs completed.",
+  },
+  {
+    icon: Building2,
+    title: `${CORPORATE_ACCOUNTS} corporate accounts`,
+    body: "Developers, main contractors, interior fit-out specialists and facility managers — including DAMAC, Sobha, Danube, Binghatti and Shapoorji Pallonji.",
+  },
+  {
+    icon: HomeIcon,
+    title: "Trusted inside private residences",
+    body: "Villas and high-value homes where furniture, finishes and discretion all matter. The same crews work in occupied family homes and on handover sites.",
   },
   {
     icon: UserCheck,
-    title: "Our own crews, never subcontracted",
-    body: "Uniformed, trained and supervised teams on the company payroll — the same faces return to your site each visit.",
-  },
-  {
-    icon: Timer,
-    title: "Answered in hours, not days",
-    body: "Surveys arranged the same week, quotes typically back within two hours during business hours.",
-  },
-  {
-    icon: ClipboardCheck,
-    title: "Fixed scope, fixed price",
-    body: "Every quote lists what is included, the chemicals used and the crew size. No variations after the fact.",
+    title: "Directly employed, supervised crews",
+    body: "Teams are on the company payroll and work in uniform under a supervisor — never subcontracted out to whoever is available that week.",
   },
 ];
 
 const PROCESS = [
   {
     title: "Choose your service",
-    body: "Pick from residential services and tell us the property type and emirate.",
+    body: "Tell us the property type and what needs doing.",
   },
   {
-    title: "Select a two-hour window",
-    body: "Saturday to Thursday, 8:00 to 20:00. Slots update live as they are taken.",
+    title: "Pick a date",
+    body: "Next-day availability on most residential services, seven days a week.",
   },
   {
     title: "We confirm by phone",
-    body: "A coordinator confirms access, scope and a fixed price before dispatch.",
+    body: "A coordinator confirms access, scope and price before dispatch.",
   },
   {
     title: "Crew arrives equipped",
-    body: "Equipment, chemicals and supervision included. You inspect before sign-off.",
+    body: "Equipment, materials and supervision included. You inspect before sign-off.",
   },
 ];
 
@@ -100,414 +142,386 @@ function Home() {
     <div className="min-h-screen">
       <SiteHeader />
 
-      <main>
-        {/* ── Hero ───────────────────────────────────────────── */}
-        <section className="relative isolate overflow-hidden bg-primary-deep text-primary-foreground">
-          <img
-            src={heroImage}
-            alt="Haji Ahli technician cleaning floor-to-ceiling glass in a Dubai office lobby at sunrise"
-            width={1600}
-            height={1100}
-            className="absolute inset-0 -z-10 size-full object-cover"
-          />
+      <main id="main" tabIndex={-1} className="focus:outline-none">
+        {/* ── Hero ─────────────────────────────────────────────────────────
+            Split rather than full-bleed: the photography is portrait at
+            900px wide, so stretching it across a desktop viewport would
+            look soft. A tall frame shows it at native resolution. */}
+        <section className="surface-dark relative overflow-hidden bg-primary-deep text-primary-foreground">
           <div
             aria-hidden
-            className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,var(--primary-deep)_18%,color-mix(in_oklab,var(--primary-deep)_72%,transparent)_52%,transparent_88%)]"
+            className="pointer-events-none absolute -left-40 top-0 size-[38rem] rounded-full bg-primary/25 blur-[120px]"
           />
-          <div className="container-page grid min-h-[86vh] items-end pb-20 pt-28 sm:min-h-[88vh] lg:pb-28">
-            <Reveal className="max-w-4xl">
-              <span className="inline-flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-primary-foreground/70">
-                <BadgeCheck className="size-3.5 text-accent" />
-                Dubai Municipality approved · Est. in the UAE
-              </span>
-              <h1 className="display-xl mt-7 max-w-4xl text-balance">
-                <span className="block">Facilities that never look</span>
-                <span className="block text-primary-foreground/55">
-                  like they were cleaned.
-                </span>
+
+          <div className="container-page relative grid items-center gap-14 pb-20 pt-28 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20 lg:pb-28 lg:pt-36">
+            <Reveal>
+              <h1 className="display-2xl max-w-[13ch]">
+                Exceptional cleaning.
+                <span className="block text-primary-foreground/55">Professional standards.</span>
+                Every time.
               </h1>
-              <p className="lede mt-7 max-w-xl text-primary-foreground/75">
-                {COMPANY.shortName} maintains hotels, offices, clinics, warehouses
-                and private residences across all seven emirates — with our own
-                supervised crews.
+
+              <p className="mt-7 max-w-xl text-[1.0625rem] leading-relaxed text-primary-foreground/75">
+                Trusted by homeowners, real estate developers, construction companies, offices and
+                commercial properties across the UAE. Professional crews, deep cleaning expertise,
+                and flexible next-day bookings.
               </p>
-              <div className="mt-10 flex flex-wrap items-center gap-3">
-                <Link
-                  to="/book"
-                  className="group inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-sm font-semibold text-accent-foreground transition-all duration-300 hover:gap-3.5 hover:shadow-[0_12px_32px_oklch(0.52_0.2_25_/_0.35)]"
-                >
-                  Book a service
-                  <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                </Link>
-                <Link
-                  to="/business"
-                  className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/25 px-7 py-3.5 text-sm font-medium text-primary-foreground/90 transition-colors duration-300 hover:border-primary-foreground/60 hover:bg-primary-foreground/5"
-                >
-                  Request commercial quote
-                  <ArrowUpRight className="size-4" />
-                </Link>
-                <a
-                  href={`tel:${tel}`}
-                  className="link-underline ml-1 hidden text-sm text-primary-foreground/70 sm:inline"
-                >
-                  or call {COMPANY.phone}
-                </a>
+
+              <div className="mt-9 flex flex-wrap items-center gap-3">
+                <Button asChild variant="accent" size="xl" className="group">
+                  <Link to="/book">
+                    Book a service
+                    <ArrowRight className="transition-transform duration-[var(--dur-base)] group-hover:translate-x-0.5" />
+                  </Link>
+                </Button>
+                <Button asChild variant="onDark" size="xl">
+                  <Link to="/business">Request a quote</Link>
+                </Button>
+              </div>
+
+              <a
+                href={`tel:${tel}`}
+                className="link-underline mt-7 inline-flex items-center gap-2 text-sm font-medium text-primary-foreground/70"
+              >
+                <PhoneCall className="size-4" aria-hidden />
+                {COMPANY.phone}
+              </a>
+            </Reveal>
+
+            <Reveal delay={120} className="relative lg:pl-6">
+              <div className="relative overflow-hidden rounded-[1.75rem] shadow-lift ring-1 ring-primary-foreground/15">
+                <ServicePhoto
+                  photo={PHOTOS_ALL.facadeGlassPole}
+                  priority
+                  aspect="aspect-4/5"
+                  sizes="(max-width: 1024px) 92vw, 44vw"
+                />
               </div>
             </Reveal>
           </div>
-        </section>
 
-        {/* ── Trusted by ─────────────────────────────────────── */}
-        <section className="border-b border-border bg-background">
-          <div className="container-page grid gap-12 py-16 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-20">
-            <Reveal>
-              <p className="eyebrow">Trusted across the emirates</p>
-              <dl className="mt-8 grid grid-cols-2 gap-x-10 gap-y-8">
-                {STATS.map((stat) => (
-                  <div key={stat.label}>
-                    <dt className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          {/* Proof bar — sits on the seam between hero and page. */}
+          <div className="border-t border-primary-foreground/12">
+            <div className="container-page">
+              <dl className="grid grid-cols-2 md:grid-cols-4">
+                {STATS.map((stat, i) => (
+                  <Reveal key={stat.label} delay={i * 70} className={cellBorders(i)}>
+                    <dt className="font-display text-2xl font-bold tracking-tight sm:text-[1.75rem]">
                       {stat.value}
                     </dt>
-                    <dd className="mt-1.5 text-sm leading-snug text-muted-foreground">
+                    <dd className="mt-1 text-[0.8125rem] leading-snug text-primary-foreground/60">
                       {stat.label}
                     </dd>
-                  </div>
+                  </Reveal>
                 ))}
               </dl>
-            </Reveal>
+            </div>
+          </div>
+        </section>
 
-            <Reveal delay={120} className="marquee-mask overflow-hidden">
-              <div className="marquee-track gap-14">
-                {[...CLIENT_WORDMARKS, ...CLIENT_WORDMARKS].map((name, i) => (
+        {/* ── Clients (visual concept preserved from the previous build) ─── */}
+        <section className="border-b border-border bg-background">
+          <div className="container-page py-16 sm:py-20">
+            <Reveal className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow">Trusted by</p>
+              <h2 className="display-md mt-4">
+                {CORPORATE_ACCOUNTS} corporate accounts across the emirates
+              </h2>
+              <p className="lede mt-4">
+                Developers, main contractors, interior fit-out specialists and property owners rely
+                on our crews for scheduled and one-off work.
+              </p>
+            </Reveal>
+          </div>
+
+          <Reveal delay={80} className="marquee-mask space-y-5 overflow-hidden pb-16 sm:pb-20">
+            {[CLIENT_WORDMARKS.slice(0, 9), CLIENT_WORDMARKS.slice(9)].map((row, rowIndex) => (
+              <div
+                key={rowIndex}
+                className={rowIndex === 0 ? "marquee-track gap-12" : "marquee-track-reverse gap-12"}
+              >
+                {[...row, ...row].map((name, i) => (
                   <span
                     key={`${name}-${i}`}
-                    className="whitespace-nowrap font-display text-lg font-semibold tracking-tight text-foreground/25 transition-colors duration-300 hover:text-foreground/60"
+                    className="whitespace-nowrap font-display text-base font-semibold tracking-tight text-foreground/40 transition-colors duration-[var(--dur-base)] hover:text-foreground sm:text-lg"
                   >
                     {name}
                   </span>
                 ))}
               </div>
-              <p className="mt-8 max-w-md text-sm leading-relaxed text-muted-foreground">
-                From single villas to multi-tower portfolios — scheduled
-                contracts, emergency call-outs and one-off deep cleans, all run
-                from one coordination desk.
-              </p>
-            </Reveal>
-          </div>
+            ))}
+          </Reveal>
         </section>
 
-        {/* ── Services: two distinct tracks ──────────────────── */}
-        <section className="section-y">
-          <div className="container-page">
-            <Reveal className="max-w-2xl">
-              <p className="eyebrow">What we do</p>
-              <h2 className="display-lg mt-5">Two ways to work with us</h2>
-            </Reveal>
-
-            <div className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-border bg-border lg:grid-cols-2">
-              {/* Commercial */}
-              <Reveal className="flex flex-col bg-primary-deep text-primary-foreground">
-                <div className="relative h-64 overflow-hidden sm:h-72">
-                  <img
-                    src={commercialImage}
-                    alt="Technician servicing a stainless steel potable water tank plant room"
-                    loading="lazy"
-                    width={1200}
-                    height={1408}
-                    className="size-full object-cover transition-transform duration-[900ms] ease-out hover:scale-[1.04]"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col p-9 sm:p-11">
-                  <span className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-accent">
-                    Commercial
-                  </span>
-                  <h3 className="mt-4 font-display text-2xl font-bold tracking-tight">
-                    Surveyed on site, quoted in writing
-                  </h3>
-                  <p className="mt-3 max-w-sm text-sm leading-relaxed text-primary-foreground/70">
-                    Contracts are scoped against access, volume and schedule —
-                    so commercial work is quoted, never booked online.
-                  </p>
-                  <ul className="mt-8 space-y-3 border-t border-primary-foreground/15 pt-8">
-                    {BUSINESS_SERVICES.map((s) => (
-                      <li
-                        key={s.slug}
-                        className="flex items-baseline justify-between gap-6 text-sm"
-                      >
-                        <span className="text-primary-foreground/90">{s.name}</span>
-                        {s.approved ? (
-                          <span className="shrink-0 text-[0.68rem] uppercase tracking-[0.14em] text-accent">
-                            Approved
-                          </span>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    to="/business"
-                    className="group mt-10 inline-flex w-fit items-center gap-2 rounded-full border border-primary-foreground/25 px-6 py-3 text-sm font-semibold transition-colors hover:bg-primary-foreground/10"
-                  >
-                    Request a quote
-                    <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                  </Link>
-                </div>
-              </Reveal>
-
-              {/* Residential */}
-              <Reveal delay={120} className="flex flex-col bg-card">
-                <div className="relative h-64 overflow-hidden sm:h-72">
-                  <img
-                    src={residentialImage}
-                    alt="Housekeeper cleaning a bright modern Dubai villa living room"
-                    loading="lazy"
-                    width={1200}
-                    height={1408}
-                    className="size-full object-cover transition-transform duration-[900ms] ease-out hover:scale-[1.04]"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col p-9 sm:p-11">
-                  <span className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-primary">
-                    Residential
-                  </span>
-                  <h3 className="mt-4 font-display text-2xl font-bold tracking-tight">
-                    Pick a slot, we confirm by phone
-                  </h3>
-                  <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-                    Apartments, townhouses and villas — booked online in two-hour
-                    windows, Saturday to Thursday.
-                  </p>
-                  <ul className="mt-8 divide-y divide-border border-t border-border">
-                    {RETAIL_SERVICES.map((s) => (
-                      <li key={s.slug}>
-                        <Link
-                          to="/book"
-                          search={{ service: s.name }}
-                          className="group flex items-center justify-between gap-6 py-3.5 text-sm"
-                        >
-                          <span className="font-medium">{s.name}</span>
-                          <ArrowUpRight className="size-4 shrink-0 text-muted-foreground opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100" />
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    to="/book"
-                    className="group mt-10 inline-flex w-fit items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-deep"
-                  >
-                    <CalendarDays className="size-4" />
-                    Book now
-                  </Link>
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Why choose us ──────────────────────────────────── */}
-        <section className="bg-sand">
-          <div className="container-page section-y">
-            <div className="grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-24">
-              <Reveal>
-                <p className="eyebrow">Why Haji Ahli</p>
-                <h2 className="display-lg mt-5 max-w-sm">
-                  The difference is in the standard, not the sales pitch
-                </h2>
-                <a
-                  href={`tel:${tel}`}
-                  className="link-underline mt-8 inline-flex items-center gap-2 text-sm font-semibold text-primary"
-                >
-                  <PhoneCall className="size-4" />
-                  Speak to a coordinator
-                </a>
-              </Reveal>
-
-              <div>
-                {DIFFERENTIATORS.map((item, i) => (
-                  <Reveal
-                    key={item.title}
-                    delay={i * 80}
-                    className="grid grid-cols-[auto_minmax(0,1fr)] gap-6 border-t border-border py-8 last:border-b"
-                  >
-                    <item.icon
-                      className="mt-1 size-5 shrink-0 text-primary"
-                      strokeWidth={1.6}
-                    />
-                    <div className="min-w-0">
-                      <h3 className="font-display text-lg font-semibold tracking-tight">
-                        {item.title}
-                      </h3>
-                      <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                        {item.body}
-                      </p>
-                    </div>
-                  </Reveal>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Industries ─────────────────────────────────────── */}
+        {/* ── Capabilities: editorial, borderless, photo-led ─────────────── */}
         <section className="container-page section-y">
-          <Reveal className="flex flex-wrap items-end justify-between gap-6">
+          <Reveal className="flex flex-wrap items-end justify-between gap-8">
             <div className="max-w-xl">
-              <p className="eyebrow">Industries</p>
-              <h2 className="display-lg mt-5">Where our crews work</h2>
+              <p className="eyebrow">What we do</p>
+              <h2 className="display-lg mt-5">Specialist work, handled in-house</h2>
             </div>
-            <Link
-              to="/services"
-              className="link-underline text-sm font-semibold text-primary"
-            >
-              All services
+            <Link to="/services" className="link-underline text-sm font-semibold text-primary">
+              View all services
             </Link>
           </Reveal>
 
-          <ul className="mt-14 grid border-t border-border sm:grid-cols-2 lg:grid-cols-4">
-            {INDUSTRIES.map((industry, i) => (
-              <Reveal
-                as="li"
-                key={industry.name}
-                delay={(i % 4) * 70}
-                className="group border-b border-border px-1 py-8 transition-colors duration-300 sm:[&:nth-child(odd)]:border-r lg:border-r lg:last:border-r-0 lg:[&:nth-child(4n)]:border-r-0"
-              >
-                <div className="px-5">
-                  <span className="font-mono text-xs text-muted-foreground/60">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="mt-4 font-display text-base font-semibold tracking-tight transition-colors group-hover:text-primary">
-                    {industry.name}
-                  </h3>
-                  <p className="mt-1.5 text-sm text-muted-foreground">
-                    {industry.note}
+          {/*
+            No card chrome — the photograph is the card. Borders and shadows
+            would compete with the imagery rather than support it.
+          */}
+          <div className="mt-14 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4 lg:gap-x-6">
+            {CAPABILITIES.map((item, i) => (
+              <Reveal key={item.title} delay={(i % 4) * 90}>
+                <Link
+                  to={item.to}
+                  {...(item.params ? { params: item.params } : {})}
+                  className="group block"
+                >
+                  <div className="overflow-hidden rounded-2xl bg-muted">
+                    <ServicePhoto
+                      photo={item.photo}
+                      aspect="aspect-4/5"
+                      sizes="(max-width: 640px) 90vw, (max-width: 1024px) 44vw, 23vw"
+                      className="transition-transform duration-[900ms] ease-out group-hover:scale-[1.04]"
+                    />
+                  </div>
+                  <p className="mt-5 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary">
+                    {item.label}
                   </p>
-                </div>
+                  <h3 className="display-sm mt-2.5 transition-colors duration-[var(--dur-base)] group-hover:text-primary">
+                    {item.title}
+                  </h3>
+                  <p className="body-card mt-2.5 text-muted-foreground">{item.body}</p>
+                </Link>
               </Reveal>
             ))}
-          </ul>
+          </div>
         </section>
 
-        {/* ── Featured work / clients ────────────────────────── */}
-        <section className="bg-primary-deep text-primary-foreground">
+        {/* ── Choose a category, then book ──────────────────────────────
+            The first decision in the booking flow lives on the homepage, so
+            the customer commits to a category before ever seeing a form. */}
+        <section id="book-categories" className="scroll-mt-20 border-t border-border bg-background">
           <div className="container-page section-y">
-            <Reveal className="max-w-2xl">
-              <p className="eyebrow text-primary-foreground/50">Selected work</p>
-              <h2 className="display-lg mt-5">
-                Portfolios that stay maintained, quietly
-              </h2>
+            <Reveal className="flex flex-wrap items-end justify-between gap-8">
+              <div className="max-w-xl">
+                <p className="eyebrow">Book in three steps</p>
+                <h2 className="display-lg mt-5">What do you need done?</h2>
+                <p className="lede mt-5">
+                  Pick a category, choose a date, and we confirm by phone.
+                </p>
+              </div>
+              <Button asChild variant="outline" size="lg">
+                <Link to="/services">
+                  See all services
+                  <ArrowRight />
+                </Link>
+              </Button>
             </Reveal>
 
-            <div className="mt-16 grid gap-px overflow-hidden rounded-2xl bg-primary-foreground/12 md:grid-cols-3">
-              {[
-                {
-                  icon: Droplets,
-                  sector: "Residential towers",
-                  headline: "48 potable water tanks, one weekend shutdown",
-                  detail:
-                    "Drain, scrub, disinfect and certify across a multi-tower community without interrupting supply beyond scheduled windows.",
-                },
-                {
-                  icon: Sparkles,
-                  sector: "Hospitality",
-                  headline: "Nightly back-of-house across a hotel group",
-                  detail:
-                    "Kitchens, service corridors and staff areas cleaned to audit standard, with supervisor sign-off before the morning shift.",
-                },
-                {
-                  icon: ClipboardCheck,
-                  sector: "Developers",
-                  headline: "Post-handover cleaning at unit scale",
-                  detail:
-                    "Adhesive and cement residue removal plus marble restoration, phased floor by floor ahead of client walk-throughs.",
-                },
-              ].map((item, i) => (
+            <ul className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {BOOKING_CATEGORIES.map((category, i) => (
+                <Reveal as="li" key={category.slug} delay={(i % 3) * 60}>
+                  <Link
+                    to="/book/$category"
+                    params={{ category: category.slug }}
+                    className="group flex h-full items-center gap-4 rounded-2xl border border-border p-3 pr-5 transition-colors duration-[var(--dur-base)] hover:border-primary/40 hover:bg-primary/[0.03]"
+                  >
+                    <CategoryIcon
+                      slug={category.slug}
+                      className="size-16 group-hover:border-primary/30"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-display text-base font-semibold tracking-tight">
+                        {category.name}
+                      </span>
+                      <span className="mt-1 block text-sm leading-snug text-muted-foreground">
+                        {category.tagline}
+                      </span>
+                    </span>
+                    <ArrowRight
+                      className="size-4 shrink-0 text-primary opacity-0 transition-all duration-[var(--dur-base)] group-hover:translate-x-0.5 group-hover:opacity-100"
+                      aria-hidden
+                    />
+                  </Link>
+                </Reveal>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* ── Two routes in ─────────────────────────────────────────────
+            Set as a typographic comparison split by a hairline rather than
+            two floating cards — the card treatment read as generic and sat
+            apart from the rest of the page. */}
+        <section className="bg-sand">
+          <div className="container-page section-y">
+            <Reveal className="max-w-2xl">
+              <p className="eyebrow">How to work with us</p>
+              <h2 className="display-lg mt-5">Two ways in</h2>
+            </Reveal>
+
+            <div className="mt-16 grid lg:grid-cols-2">
+              <Reveal className="flex flex-col border-t border-foreground/15 pt-9 lg:border-r lg:pr-14">
+                <p className="font-mono text-xs tracking-widest text-muted-foreground">01</p>
+                <h3 className="display-md mt-5 flex items-center gap-3">
+                  <CalendarDays className="size-5 text-primary" strokeWidth={1.5} aria-hidden />
+                  Homes
+                </h3>
+                <p className="lede mt-5 max-w-md">
+                  Pick your service and a date online. Next-day slots are available on most
+                  residential work, and a coordinator confirms scope and price by phone before the
+                  crew is dispatched.
+                </p>
+                <dl className="mt-8 space-y-3 text-sm">
+                  <Fact term="Booking" detail="Online, three steps" />
+                  <Fact term="Lead time" detail="Next day on most services" />
+                  <Fact term="Confirmation" detail="By phone, before dispatch" />
+                </dl>
+                {/* mt-auto pins both CTAs to the same baseline regardless of
+                    how much copy sits above them. */}
+                <div className="mt-auto pt-9">
+                  <Button asChild size="lg" className="group">
+                    <Link to="/book">
+                      Book a service
+                      <ArrowRight className="transition-transform duration-[var(--dur-base)] group-hover:translate-x-0.5" />
+                    </Link>
+                  </Button>
+                </div>
+              </Reveal>
+
+              <Reveal
+                delay={120}
+                className="flex flex-col mt-14 border-t border-foreground/15 pt-9 lg:mt-0 lg:pl-14"
+              >
+                <p className="font-mono text-xs tracking-widest text-muted-foreground">02</p>
+                <h3 className="display-md mt-5 flex items-center gap-3">
+                  <Building2 className="size-5 text-primary" strokeWidth={1.5} aria-hidden />
+                  Business
+                </h3>
+                <p className="lede mt-5 max-w-md">
+                  Contracts are scoped against access, volume and schedule, so commercial work is
+                  surveyed on site and quoted in writing rather than booked online.
+                </p>
+                <dl className="mt-8 space-y-3 text-sm">
+                  <Fact term="Booking" detail="Survey, then written quote" />
+                  <Fact term="Scope" detail="Fixed before work starts" />
+                  <Fact term="Contracts" detail="Scheduled or one-off" />
+                </dl>
+                <div className="mt-auto pt-9">
+                  <Button asChild variant="outline" size="lg" className="group">
+                    <Link to="/business">
+                      Request a quote
+                      <ArrowUpRight className="transition-transform duration-[var(--dur-base)] group-hover:-translate-y-0.5" />
+                    </Link>
+                  </Button>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Why us — asymmetric, hairline-separated ────────────────────── */}
+        <section className="container-page section-y">
+          <div className="grid gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24">
+            <Reveal className="lg:sticky lg:top-28 lg:self-start">
+              <p className="eyebrow">Why Haji Ahli</p>
+              <h2 className="display-lg mt-5 max-w-md text-balance">
+                Trusted where the standard is higher
+              </h2>
+              <p className="lede mt-6 max-w-md">
+                Since {COMPANY.established}, Haji Ahli has cleaned and maintained property across
+                the UAE &mdash; from private villas and high-value residences to offices, facilities
+                and major corporate accounts.
+              </p>
+              <Button asChild variant="outline" size="lg" className="mt-8">
+                <a href={`tel:${tel}`}>
+                  <PhoneCall />
+                  Speak to a coordinator
+                </a>
+              </Button>
+            </Reveal>
+
+            <div>
+              {DIFFERENTIATORS.map((item, i) => (
                 <Reveal
-                  key={item.headline}
-                  delay={i * 100}
-                  className="bg-primary-deep p-9 transition-colors duration-500 hover:bg-primary sm:p-11"
+                  key={item.title}
+                  delay={i * 80}
+                  className="grid grid-cols-[auto_minmax(0,1fr)] gap-5 border-t border-border py-9 first:border-t-0 first:pt-0 sm:gap-7"
                 >
-                  <item.icon
-                    className="size-5 text-accent"
-                    strokeWidth={1.6}
-                  />
-                  <p className="mt-8 text-[0.72rem] uppercase tracking-[0.2em] text-primary-foreground/50">
-                    {item.sector}
-                  </p>
-                  <h3 className="mt-3 font-display text-xl font-semibold leading-snug tracking-tight">
-                    {item.headline}
-                  </h3>
-                  <p className="mt-4 text-sm leading-relaxed text-primary-foreground/65">
-                    {item.detail}
-                  </p>
+                  <span className="icon-chip">
+                    <item.icon className="size-5" strokeWidth={1.5} />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="display-sm">{item.title}</h3>
+                    <p className="body-card mt-2.5 max-w-xl text-muted-foreground">{item.body}</p>
+                  </div>
                 </Reveal>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ── Booking process ────────────────────────────────── */}
-        <section className="container-page section-y">
-          <Reveal className="max-w-xl">
-            <p className="eyebrow">Residential booking</p>
-            <h2 className="display-lg mt-5">Four steps, no paperwork</h2>
-          </Reveal>
+        {/* ── Process over a full-bleed photograph ───────────────────────── */}
+        <section className="surface-dark relative isolate overflow-hidden bg-primary-deep text-primary-foreground">
+          <ServicePhoto
+            photo={PHOTOS_ALL.interiorGlassPole}
+            fill
+            sizes="100vw"
+            className="absolute inset-0 -z-20 opacity-20"
+          />
+          <div aria-hidden className="absolute inset-0 -z-10 bg-primary-deep/75" />
 
-          <ol className="mt-16 grid gap-y-12 md:grid-cols-4 md:gap-x-10">
-            {PROCESS.map((step, i) => (
-              <Reveal
-                as="li"
-                key={step.title}
-                delay={i * 90}
-                className="relative md:pt-10"
-              >
-                <span
-                  aria-hidden
-                  className="absolute left-0 top-0 hidden h-px w-full bg-border md:block"
-                />
-                <span
-                  aria-hidden
-                  className="absolute left-0 top-0 hidden size-1.5 -translate-y-[3px] rounded-full bg-accent md:block"
-                />
-                <span className="font-mono text-xs text-muted-foreground/60">
-                  Step {i + 1}
-                </span>
-                <h3 className="mt-3 font-display text-lg font-semibold tracking-tight">
-                  {step.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {step.body}
-                </p>
-              </Reveal>
-            ))}
-          </ol>
+          <div className="container-page section-y">
+            <Reveal className="max-w-xl">
+              <p className="eyebrow text-primary-foreground/55">Booking</p>
+              <h2 className="display-lg mt-5">Four steps, no paperwork</h2>
+            </Reveal>
+
+            <ol className="mt-14 grid gap-y-12 md:grid-cols-4 md:gap-x-10">
+              {PROCESS.map((step, i) => (
+                <Reveal as="li" key={step.title} delay={i * 90} className="relative md:pt-10">
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-0 hidden h-px w-full bg-primary-foreground/20 md:block"
+                  />
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-0 hidden size-2 -translate-y-[3.5px] rounded-full bg-accent-soft md:block"
+                  />
+                  <span className="font-mono text-xs text-primary-foreground/50">Step {i + 1}</span>
+                  <h3 className="display-sm mt-3">{step.title}</h3>
+                  <p className="body-card mt-2.5 text-primary-foreground/65">{step.body}</p>
+                </Reveal>
+              ))}
+            </ol>
+
+            {/* Stated once, globally — true of every service in the catalogue. */}
+            <Reveal delay={140} className="mt-16 max-w-2xl">
+              <MaterialsNote tone="dark" />
+            </Reveal>
+          </div>
         </section>
 
-        {/* ── CTA banner ─────────────────────────────────────── */}
-        <section className="container-page pb-24">
-          <Reveal className="overflow-hidden rounded-3xl bg-primary px-8 py-16 text-primary-foreground sm:px-14 sm:py-20">
-            <div className="grid gap-10 lg:grid-cols-[1.1fr_auto] lg:items-end">
-              <div>
-                <h2 className="display-lg max-w-xl">
-                  Tell us the space. We'll take it from there.
-                </h2>
-                <p className="mt-5 max-w-md text-sm leading-relaxed text-primary-foreground/70">
-                  {COMPANY.hours} · {COMPANY.phone} · {COMPANY.email}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  to="/book"
-                  className="group inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-sm font-semibold text-accent-foreground transition-all duration-300 hover:gap-3.5"
-                >
+        {/* ── Closing CTA ───────────────────────────────────────────────── */}
+        <section className="container-page section-y">
+          <Reveal className="grid gap-10 border-t border-border pt-14 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div>
+              <h2 className="display-lg max-w-xl">Tell us the space. We'll take it from there.</h2>
+              <p className="lede mt-5 max-w-md">
+                {COMPANY.hours} · {COMPANY.phone} · {COMPANY.email}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild variant="accent" size="xl" className="group">
+                <Link to="/book">
                   Book a service
-                  <ArrowRight className="size-4" />
+                  <ArrowRight className="transition-transform duration-[var(--dur-base)] group-hover:translate-x-0.5" />
                 </Link>
-                <Link
-                  to="/business"
-                  className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/30 px-7 py-3.5 text-sm font-medium transition-colors hover:bg-primary-foreground/10"
-                >
-                  Commercial quote
-                </Link>
-              </div>
+              </Button>
+              <Button asChild variant="outline" size="xl">
+                <Link to="/business">Commercial quote</Link>
+              </Button>
             </div>
           </Reveal>
         </section>
@@ -516,4 +530,29 @@ function Home() {
       <SiteFooter />
     </div>
   );
+}
+
+/** Label/value row used in the "two ways in" comparison. */
+function Fact({ term, detail }: { term: string; detail: string }) {
+  return (
+    <div className="flex gap-4 border-b border-border pb-3">
+      <dt className="w-28 shrink-0 text-muted-foreground">{term}</dt>
+      <dd className="font-medium">{detail}</dd>
+    </div>
+  );
+}
+
+/**
+ * Hairlines for the hero proof bar. Written per cell because the dividers
+ * have to change when the grid wraps from 4-up to 2-up.
+ */
+function cellBorders(i: number) {
+  const base = "border-primary-foreground/12 py-7 pr-5 sm:py-8";
+  const rules = [
+    "",
+    "border-l pl-5 sm:pl-7",
+    "border-t md:border-l md:border-t-0 md:pl-5 lg:pl-7",
+    "border-l border-t pl-5 md:border-t-0 sm:pl-7",
+  ];
+  return `${base} ${rules[i] ?? ""}`;
 }

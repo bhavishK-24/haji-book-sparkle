@@ -30,3 +30,22 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local secrets — never commit
+.env
+.env.local
+
+# Source originals and internal business documents.
+#
+# Holds the full-resolution photography plus the pricing workbooks and company
+# information doc. None of it is needed to build or run the site: the web-ready
+# derivatives live in src/assets/, and the catalogue and pricing data are
+# committed as generated .ts files.
+#
+# Keep these files safe outside the repo — `scripts/prepare-assets.mjs`,
+# `build-catalogue.mjs` and `build-pricing.mjs` need them to regenerate.
+haji_ahli_assets/
+
+# Supabase CLI scratch state — machine-local, not project config.
+supabase/.temp/
+supabase/.branches/

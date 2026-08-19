@@ -35,6 +35,9 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-brand-green: var(--brand-green);
+  --color-brand-red: var(--brand-red);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -57,6 +60,8 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --shadow-soft: var(--shadow-soft);
   --shadow-lift: var(--shadow-lift);
+  --ease-out: var(--ease-out-quint);
+  --ease-spring: var(--ease-out-back);
 }
 
 :root {
@@ -64,84 +69,117 @@
   --font-heading: "Sora", system-ui, sans-serif;
   --font-body: "Manrope", system-ui, sans-serif;
 
-  --background: oklch(0.988 0.004 150);
-  --foreground: oklch(0.22 0.025 163);
+  /* Motion — one vocabulary, so no component invents its own timing. */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.28, 0.64, 1);
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 450ms;
+  --dur-reveal: 700ms;
+
+  /*
+   * Brand colours sampled directly from the Haji Ahli logo:
+   *   green #008A40 -> oklch(0.554 0.151 150.6)
+   *   red   #DA0616 -> oklch(0.560 0.227 27.5)
+   * Both hues are held constant across the ramp; only L and C move, so every
+   * tint stays recognisably on-brand. Contrast figures below are measured.
+   */
+  --brand-green: oklch(0.554 0.151 150.6);
+  --brand-red: oklch(0.56 0.227 27.5);
+
+  --background: oklch(0.99 0.005 150.6);
+  --foreground: oklch(0.215 0.028 150.6);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.025 163);
+  --card-foreground: oklch(0.215 0.028 150.6);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.025 163);
+  --popover-foreground: oklch(0.215 0.028 150.6);
 
-  --primary: oklch(0.34 0.048 163);
-  --primary-deep: oklch(0.25 0.04 163);
-  --primary-foreground: oklch(0.985 0.005 160);
+  /* White text on primary = 5.5:1. The logo green itself is only 4.46:1, so
+     the interactive tone is one step darker than the mark. */
+  --primary: oklch(0.5 0.151 150.6);
+  /* Dark section ground. White text = 15.2:1. */
+  --primary-deep: oklch(0.26 0.055 150.6);
+  --primary-foreground: oklch(0.985 0.008 150.6);
 
-  --secondary: oklch(0.955 0.008 160);
-  --secondary-foreground: oklch(0.28 0.04 163);
+  --secondary: oklch(0.958 0.011 150.6);
+  --secondary-foreground: oklch(0.28 0.04 150.6);
 
-  --muted: oklch(0.962 0.006 160);
-  --muted-foreground: oklch(0.5 0.02 163);
+  --muted: oklch(0.963 0.009 150.6);
+  /* 6.9:1 on --background. */
+  --muted-foreground: oklch(0.46 0.022 150.6);
 
-  --accent: oklch(0.52 0.2 25);
-  --accent-foreground: oklch(0.98 0.01 25);
+  /* White text on accent = 5.9:1. */
+  --accent: oklch(0.52 0.227 27.5);
+  --accent-foreground: oklch(0.99 0.012 27.5);
+  /* Brand red is too dark to read on --primary-deep; this lift gives 5.7:1. */
+  --accent-soft: oklch(0.72 0.15 27.5);
 
-  --sand: oklch(0.955 0.012 160);
+  --sand: oklch(0.965 0.016 150.6);
 
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0.003 248);
+  --destructive: oklch(0.52 0.227 27.5);
+  --destructive-foreground: oklch(0.99 0.012 27.5);
 
-  --border: oklch(0.905 0.008 160);
-  --input: oklch(0.905 0.008 160);
-  --ring: oklch(0.34 0.048 163);
+  --border: oklch(0.9 0.011 150.6);
+  --input: oklch(0.9 0.011 150.6);
+  --ring: oklch(0.5 0.151 150.6);
+  /* Indirection so dark sections can re-point the focus ring — see `surface-dark`. */
+  --focus-ring: var(--ring);
 
-  --shadow-soft: 0 1px 2px oklch(0.25 0.04 163 / 0.05), 0 8px 24px oklch(0.25 0.04 163 / 0.06);
-  --shadow-lift: 0 18px 48px oklch(0.25 0.04 163 / 0.14);
+  --shadow-soft:
+    0 1px 2px oklch(0.26 0.055 150.6 / 0.05), 0 8px 24px oklch(0.26 0.055 150.6 / 0.06);
+  --shadow-lift: 0 18px 48px oklch(0.26 0.055 150.6 / 0.14);
 
-  --chart-1: oklch(0.34 0.048 163);
-  --chart-2: oklch(0.52 0.2 25);
-  --chart-3: oklch(0.55 0.06 163);
-  --chart-4: oklch(0.7 0.07 150);
+  --chart-1: oklch(0.5 0.151 150.6);
+  --chart-2: oklch(0.52 0.227 27.5);
+  --chart-3: oklch(0.62 0.09 150.6);
+  --chart-4: oklch(0.74 0.08 150.6);
   --chart-5: oklch(0.55 0.06 250);
 
-  --sidebar: oklch(0.985 0.005 160);
-  --sidebar-foreground: oklch(0.22 0.025 163);
-  --sidebar-primary: oklch(0.34 0.048 163);
-  --sidebar-primary-foreground: oklch(0.985 0.005 160);
-  --sidebar-accent: oklch(0.955 0.008 160);
-  --sidebar-accent-foreground: oklch(0.28 0.04 163);
-  --sidebar-border: oklch(0.905 0.008 160);
-  --sidebar-ring: oklch(0.34 0.048 163);
+  --sidebar: oklch(0.985 0.008 150.6);
+  --sidebar-foreground: oklch(0.215 0.028 150.6);
+  --sidebar-primary: oklch(0.5 0.151 150.6);
+  --sidebar-primary-foreground: oklch(0.985 0.008 150.6);
+  --sidebar-accent: oklch(0.958 0.011 150.6);
+  --sidebar-accent-foreground: oklch(0.28 0.04 150.6);
+  --sidebar-border: oklch(0.9 0.011 150.6);
+  --sidebar-ring: oklch(0.5 0.151 150.6);
 }
 
+/*
+ * Dark theme tokens. Nothing currently sets `.dark`, so this branch is
+ * dormant — kept on brand hue so enabling it later is a switch, not a redesign.
+ */
 .dark {
-  --background: oklch(0.19 0.025 200);
-  --foreground: oklch(0.96 0.008 95);
-  --card: oklch(0.24 0.03 200);
-  --card-foreground: oklch(0.96 0.008 95);
-  --popover: oklch(0.24 0.03 200);
-  --popover-foreground: oklch(0.96 0.008 95);
-  --primary: oklch(0.68 0.075 163);
-  --primary-deep: oklch(0.24 0.04 163);
-  --primary-foreground: oklch(0.19 0.025 200);
-  --secondary: oklch(0.28 0.03 200);
-  --secondary-foreground: oklch(0.96 0.008 95);
-  --muted: oklch(0.28 0.03 200);
-  --muted-foreground: oklch(0.72 0.02 200);
-  --accent: oklch(0.52 0.2 25);
-  --accent-foreground: oklch(0.98 0.01 25);
-  --sand: oklch(0.28 0.03 200);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0.003 248);
+  --background: oklch(0.18 0.022 150.6);
+  --foreground: oklch(0.96 0.01 150.6);
+  --card: oklch(0.23 0.03 150.6);
+  --card-foreground: oklch(0.96 0.01 150.6);
+  --popover: oklch(0.23 0.03 150.6);
+  --popover-foreground: oklch(0.96 0.01 150.6);
+  --primary: oklch(0.7 0.14 150.6);
+  --primary-deep: oklch(0.23 0.05 150.6);
+  --primary-foreground: oklch(0.18 0.022 150.6);
+  --secondary: oklch(0.27 0.03 150.6);
+  --secondary-foreground: oklch(0.96 0.01 150.6);
+  --muted: oklch(0.27 0.03 150.6);
+  --muted-foreground: oklch(0.74 0.02 150.6);
+  --accent: oklch(0.62 0.2 27.5);
+  --accent-foreground: oklch(0.99 0.012 27.5);
+  --accent-soft: oklch(0.75 0.15 27.5);
+  --sand: oklch(0.27 0.03 150.6);
+  --destructive: oklch(0.66 0.2 27.5);
+  --destructive-foreground: oklch(0.99 0.012 27.5);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.72 0.09 190);
-  --sidebar: oklch(0.24 0.03 200);
-  --sidebar-foreground: oklch(0.96 0.008 95);
-  --sidebar-primary: oklch(0.72 0.09 190);
-  --sidebar-primary-foreground: oklch(0.19 0.025 200);
-  --sidebar-accent: oklch(0.28 0.03 200);
-  --sidebar-accent-foreground: oklch(0.96 0.008 95);
+  --ring: oklch(0.7 0.14 150.6);
+  --sidebar: oklch(0.23 0.03 150.6);
+  --sidebar-foreground: oklch(0.96 0.01 150.6);
+  --sidebar-primary: oklch(0.7 0.14 150.6);
+  --sidebar-primary-foreground: oklch(0.18 0.022 150.6);
+  --sidebar-accent: oklch(0.27 0.03 150.6);
+  --sidebar-accent-foreground: oklch(0.96 0.01 150.6);
   --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.72 0.09 190);
+  --sidebar-ring: oklch(0.7 0.14 150.6);
 }
 
 @layer base {
@@ -149,11 +187,18 @@
     border-color: var(--color-border);
   }
 
+  html {
+    scroll-behavior: smooth;
+    /* Sticky header is 4.5rem; keep anchored targets clear of it. */
+    scroll-padding-top: 5.5rem;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
   h1,
@@ -162,14 +207,54 @@
   h4 {
     font-family: var(--font-heading);
     letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /*
+   * Every interactive element gets a visible keyboard ring by default.
+   * `:where()` keeps specificity at 0 so components can still opt out.
+   */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  /* Images should never blow out a grid track on small screens. */
+  :where(img, svg, video) {
+    max-width: 100%;
   }
 }
 
+/*
+ * Page gutter scales with viewport. The previous flat 1.25rem left desktop
+ * content nearly touching the container edge at wide widths.
+ */
 @utility container-page {
   margin-inline: auto;
   width: 100%;
   max-width: 76rem;
-  padding-inline: 1.25rem;
+  /* 20px on phones → 40px from ~1000px up. */
+  padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+/*
+ * Marks a section painted on a dark brand surface. Re-points the focus ring
+ * and border tokens so keyboard focus and hairlines stay visible there.
+ */
+/*
+ * Marks a section painted on a dark brand surface.
+ *
+ * Deliberately does NOT remap --color-accent: the accent *button* still needs
+ * the deep red behind white text. For accent-coloured TEXT on this ground use
+ * `text-accent-soft`, which is lifted to clear 5.7:1.
+ */
+@utility surface-dark {
+  --focus-ring: oklch(0.93 0.03 150.6);
+  --color-border: oklch(1 0 0 / 0.16);
 }
 
 @utility surface-card {
@@ -187,13 +272,137 @@
   color: var(--color-muted-foreground);
 }
 
-/* Editorial section rhythm: generous whitespace, hairline separators */
+/*
+ * Frosted panel for content laid over photography — used by the hero proof
+ * bar. Falls back to a solid tint where backdrop-filter is unsupported.
+ */
+@utility glass-panel {
+  background-color: oklch(0.25 0.04 163 / 0.55);
+  border: 1px solid oklch(1 0 0 / 0.14);
+
+  @supports (backdrop-filter: blur(1px)) {
+    background-color: oklch(0.25 0.04 163 / 0.32);
+    backdrop-filter: blur(20px) saturate(1.1);
+  }
+}
+
+/*
+ * Tinted container that gives a line icon enough visual weight to anchor a
+ * card heading. Replaces bare icons floating next to text.
+ */
+@utility icon-chip {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-lg);
+  background-color: color-mix(in oklab, var(--color-primary) 9%, transparent);
+  color: var(--color-primary);
+}
+
+@utility icon-chip-inverse {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-lg);
+  background-color: oklch(1 0 0 / 0.09);
+  border: 1px solid oklch(1 0 0 / 0.12);
+}
+
+/*
+ * Softens the seam where a light section meets the dark brand surface, so
+ * the transition reads as designed rather than as an abrupt colour switch.
+ */
+@utility fade-to-dark {
+  background-image: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklab, var(--color-primary-deep) 100%, transparent)
+  );
+}
+
+/*
+ * Editorial section rhythm. Three steps only — every section on the site
+ * should use one of these rather than an ad-hoc py-* value.
+ */
 @utility section-y {
   padding-block: clamp(5rem, 10vw, 9rem);
 }
 
+@utility section-y-sm {
+  padding-block: clamp(3.5rem, 6vw, 5.5rem);
+}
+
+@utility section-y-lg {
+  padding-block: clamp(6rem, 12vw, 11rem);
+}
+
 @utility hairline {
   border-top: 1px solid var(--color-border);
+}
+
+/*
+ * Body copy for the legal pages.
+ *
+ * Long-form text that has to be *read*, not skimmed: a comfortable measure,
+ * loose leading, and list markers that survive the Tailwind preflight reset.
+ */
+@utility legal-prose {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: var(--color-muted-foreground);
+
+  & p {
+    max-width: 62ch;
+  }
+
+  & strong {
+    color: var(--color-foreground);
+    font-weight: 600;
+  }
+
+  & a:not([class]) {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  & ul {
+    max-width: 62ch;
+    margin-block: 0.5rem;
+    padding-inline-start: 1.15rem;
+    list-style: disc;
+  }
+
+  & ol {
+    max-width: 62ch;
+    margin-block: 0.5rem;
+    padding-inline-start: 1.35rem;
+    list-style: decimal;
+  }
+
+  & li {
+    margin-block: 0.35rem;
+  }
+
+  & li::marker {
+    color: var(--color-primary);
+  }
+}
+
+/*
+ * Hero-only. Tighter tracking and sub-1 leading than display-xl so a
+ * three-line headline reads as one typographic block rather than three rows.
+ */
+@utility display-2xl {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.042em;
+  line-height: 0.94;
+  font-size: clamp(2.5rem, 6.4vw, 5rem);
 }
 
 @utility display-xl {
@@ -212,10 +421,68 @@
   font-size: clamp(2rem, 3.6vw, 3rem);
 }
 
+/* Section-level heading, one step below display-lg. */
+@utility display-md {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+}
+
+/* Card and sub-section heading. */
+@utility display-sm {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  font-size: 1.1875rem;
+}
+
 @utility lede {
   font-size: clamp(1rem, 1.2vw, 1.125rem);
   line-height: 1.65;
   color: var(--color-muted-foreground);
+}
+
+/*
+ * Body copy inside cards. 15px rather than 14px — at premium spacing the
+ * smaller step reads as cramped rather than refined.
+ */
+@utility body-card {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* Lede on a dark surface — inherits the section's own foreground colour. */
+@utility lede-inverse {
+  font-size: clamp(1rem, 1.2vw, 1.125rem);
+  line-height: 1.65;
+  color: color-mix(in oklab, currentColor 78%, transparent);
+}
+
+/*
+ * Skip link — visually hidden until focused, then pinned to the top-left.
+ */
+@utility skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  transform: translateY(-150%);
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-lift);
+  transition: transform var(--dur-base) var(--ease-out-quint);
+
+  /* Any focus, not just :focus-visible — the link exists only for keyboard use. */
+  &:focus {
+    transform: translateY(0);
+  }
 }
 
 /* Micro animation: scroll reveal */
@@ -223,8 +490,8 @@
   opacity: 0;
   transform: translateY(14px);
   transition:
-    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity var(--dur-reveal) var(--ease-out-quint),
+    transform var(--dur-reveal) var(--ease-out-quint);
 }
 
 .reveal.is-visible {
@@ -232,14 +499,43 @@
   transform: none;
 }
 
+/*
+ * Content is server-rendered inside .reveal, so it must never stay hidden
+ * when scripting is unavailable or the observer never fires.
+ */
+@media (scripting: none) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .reveal {
     opacity: 1;
     transform: none;
     transition: none;
   }
+
   .marquee-track {
     animation: none;
+  }
+
+  /*
+   * Blanket damper: anything that animates or transitions collapses to a
+   * near-instant state rather than each component remembering to opt out.
+   */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -254,23 +550,31 @@
 }
 
 .marquee-mask {
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 8%,
-    black 92%,
-    transparent
-  );
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
 }
 
 .marquee-track {
   display: flex;
   width: max-content;
-  animation: marquee-x 38s linear infinite;
+  animation: marquee-x 42s linear infinite;
 }
 
-.marquee-mask:hover .marquee-track {
-  animation-play-state: paused;
+/* Second row runs the other way so the strip reads as motion, not a conveyor. */
+.marquee-track-reverse {
+  display: flex;
+  width: max-content;
+  animation: marquee-x 52s linear infinite reverse;
+}
+
+/*
+ * The client strip runs continuously — hovering does not pause it. The names
+ * are a passing trust signal, not a list to be read item by item.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track-reverse {
+    animation: none;
+  }
 }
 
 /* Understated link underline that grows on hover */
@@ -286,11 +590,27 @@
     background: currentColor;
     transform: scaleX(0);
     transform-origin: right;
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform var(--dur-slow) var(--ease-out-quint);
   }
-  &:hover::after {
+  &:hover::after,
+  &:focus-visible::after {
     transform: scaleX(1);
     transform-origin: left;
   }
 }
 
+/*
+ * Shared card hover: a 2px rise and a deeper shadow. Used instead of each
+ * card re-declaring its own translate/shadow pair.
+ */
+@utility card-lift {
+  transition:
+    transform var(--dur-base) var(--ease-out-quint),
+    box-shadow var(--dur-base) var(--ease-out-quint),
+    border-color var(--dur-base) var(--ease-out-quint);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+}

@@ -12,10 +12,18 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as BookRouteImport } from './routes/book'
 import { Route as BusinessRouteImport } from './routes/business'
+import { Route as CancellationRouteImport } from './routes/cancellation'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as BookIndexRouteImport } from './routes/book.index'
+import { Route as BookCategoryRouteImport } from './routes/book.$category'
+import { Route as BookCategoryIndexRouteImport } from './routes/book.$category.index'
+import { Route as BookCategoryDetailsRouteImport } from './routes/book.$category.details'
+import { Route as BookCategoryExtrasRouteImport } from './routes/book.$category.extras'
+import { Route as BookCategoryScheduleRouteImport } from './routes/book.$category.schedule'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -31,14 +39,19 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BookRoute = BookRouteImport.update({
-  id: '/book',
-  path: '/book',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const BusinessRoute = BusinessRouteImport.update({
   id: '/business',
   path: '/business',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CancellationRoute = CancellationRouteImport.update({
+  id: '/cancellation',
+  path: '/cancellation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServicesRoute = ServicesRouteImport.update({
@@ -46,61 +59,158 @@ const ServicesRoute = ServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const BookIndexRoute = BookIndexRouteImport.update({
+  id: '/book/',
+  path: '/book/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookCategoryRoute = BookCategoryRouteImport.update({
+  id: '/book/$category',
+  path: '/book/$category',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookCategoryIndexRoute = BookCategoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BookCategoryRoute,
+} as any)
+const BookCategoryDetailsRoute = BookCategoryDetailsRouteImport.update({
+  id: '/details',
+  path: '/details',
+  getParentRoute: () => BookCategoryRoute,
+} as any)
+const BookCategoryExtrasRoute = BookCategoryExtrasRouteImport.update({
+  id: '/extras',
+  path: '/extras',
+  getParentRoute: () => BookCategoryRoute,
+} as any)
+const BookCategoryScheduleRoute = BookCategoryScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
+  getParentRoute: () => BookCategoryRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/book': typeof BookRoute
   '/business': typeof BusinessRoute
+  '/cancellation': typeof CancellationRoute
+  '/privacy': typeof PrivacyRoute
   '/services': typeof ServicesRoute
+  '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/book/$category': typeof BookCategoryRouteWithChildren
+  '/book/': typeof BookIndexRoute
+  '/book/$category/details': typeof BookCategoryDetailsRoute
+  '/book/$category/extras': typeof BookCategoryExtrasRoute
+  '/book/$category/schedule': typeof BookCategoryScheduleRoute
+  '/book/$category/': typeof BookCategoryIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/book': typeof BookRoute
   '/business': typeof BusinessRoute
+  '/cancellation': typeof CancellationRoute
+  '/privacy': typeof PrivacyRoute
   '/services': typeof ServicesRoute
+  '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/book': typeof BookIndexRoute
+  '/book/$category/details': typeof BookCategoryDetailsRoute
+  '/book/$category/extras': typeof BookCategoryExtrasRoute
+  '/book/$category/schedule': typeof BookCategoryScheduleRoute
+  '/book/$category': typeof BookCategoryIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/book': typeof BookRoute
   '/business': typeof BusinessRoute
+  '/cancellation': typeof CancellationRoute
+  '/privacy': typeof PrivacyRoute
   '/services': typeof ServicesRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/book/$category': typeof BookCategoryRouteWithChildren
+  '/book/': typeof BookIndexRoute
+  '/book/$category/details': typeof BookCategoryDetailsRoute
+  '/book/$category/extras': typeof BookCategoryExtrasRoute
+  '/book/$category/schedule': typeof BookCategoryScheduleRoute
+  '/book/$category/': typeof BookCategoryIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/book' | '/business' | '/services' | '/admin'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/business'
+    | '/cancellation'
+    | '/privacy'
+    | '/services'
+    | '/terms'
+    | '/admin'
+    | '/book/$category'
+    | '/book/'
+    | '/book/$category/details'
+    | '/book/$category/extras'
+    | '/book/$category/schedule'
+    | '/book/$category/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/book' | '/business' | '/services' | '/admin'
+  to:
+    | '/'
+    | '/auth'
+    | '/business'
+    | '/cancellation'
+    | '/privacy'
+    | '/services'
+    | '/terms'
+    | '/admin'
+    | '/book'
+    | '/book/$category/details'
+    | '/book/$category/extras'
+    | '/book/$category/schedule'
+    | '/book/$category'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/book'
     | '/business'
+    | '/cancellation'
+    | '/privacy'
     | '/services'
+    | '/terms'
     | '/_authenticated/admin'
+    | '/book/$category'
+    | '/book/'
+    | '/book/$category/details'
+    | '/book/$category/extras'
+    | '/book/$category/schedule'
+    | '/book/$category/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  BookRoute: typeof BookRoute
   BusinessRoute: typeof BusinessRoute
+  CancellationRoute: typeof CancellationRoute
+  PrivacyRoute: typeof PrivacyRoute
   ServicesRoute: typeof ServicesRoute
+  TermsRoute: typeof TermsRoute
+  BookCategoryRoute: typeof BookCategoryRouteWithChildren
+  BookIndexRoute: typeof BookIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -126,18 +236,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/book': {
-      id: '/book'
-      path: '/book'
-      fullPath: '/book'
-      preLoaderRoute: typeof BookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/business': {
       id: '/business'
       path: '/business'
       fullPath: '/business'
       preLoaderRoute: typeof BusinessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cancellation': {
+      id: '/cancellation'
+      path: '/cancellation'
+      fullPath: '/cancellation'
+      preLoaderRoute: typeof CancellationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/services': {
@@ -147,12 +264,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/book/': {
+      id: '/book/'
+      path: '/book'
+      fullPath: '/book/'
+      preLoaderRoute: typeof BookIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book/$category': {
+      id: '/book/$category'
+      path: '/book/$category'
+      fullPath: '/book/$category'
+      preLoaderRoute: typeof BookCategoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book/$category/': {
+      id: '/book/$category/'
+      path: '/'
+      fullPath: '/book/$category/'
+      preLoaderRoute: typeof BookCategoryIndexRouteImport
+      parentRoute: typeof BookCategoryRoute
+    }
+    '/book/$category/details': {
+      id: '/book/$category/details'
+      path: '/details'
+      fullPath: '/book/$category/details'
+      preLoaderRoute: typeof BookCategoryDetailsRouteImport
+      parentRoute: typeof BookCategoryRoute
+    }
+    '/book/$category/extras': {
+      id: '/book/$category/extras'
+      path: '/extras'
+      fullPath: '/book/$category/extras'
+      preLoaderRoute: typeof BookCategoryExtrasRouteImport
+      parentRoute: typeof BookCategoryRoute
+    }
+    '/book/$category/schedule': {
+      id: '/book/$category/schedule'
+      path: '/schedule'
+      fullPath: '/book/$category/schedule'
+      preLoaderRoute: typeof BookCategoryScheduleRouteImport
+      parentRoute: typeof BookCategoryRoute
     }
   }
 }
@@ -168,14 +334,46 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface BookCategoryRouteChildren {
+  BookCategoryDetailsRoute: typeof BookCategoryDetailsRoute
+  BookCategoryExtrasRoute: typeof BookCategoryExtrasRoute
+  BookCategoryScheduleRoute: typeof BookCategoryScheduleRoute
+  BookCategoryIndexRoute: typeof BookCategoryIndexRoute
+}
+
+const BookCategoryRouteChildren: BookCategoryRouteChildren = {
+  BookCategoryDetailsRoute: BookCategoryDetailsRoute,
+  BookCategoryExtrasRoute: BookCategoryExtrasRoute,
+  BookCategoryScheduleRoute: BookCategoryScheduleRoute,
+  BookCategoryIndexRoute: BookCategoryIndexRoute,
+}
+
+const BookCategoryRouteWithChildren = BookCategoryRoute._addFileChildren(
+  BookCategoryRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  BookRoute: BookRoute,
   BusinessRoute: BusinessRoute,
+  CancellationRoute: CancellationRoute,
+  PrivacyRoute: PrivacyRoute,
   ServicesRoute: ServicesRoute,
+  TermsRoute: TermsRoute,
+  BookCategoryRoute: BookCategoryRouteWithChildren,
+  BookIndexRoute: BookIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

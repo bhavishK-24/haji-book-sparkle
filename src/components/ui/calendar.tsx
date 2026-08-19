@@ -92,10 +92,12 @@ function Calendar({
         range_start: cn("bg-accent rounded-l-md", defaultClassNames.range_start),
         range_middle: cn("rounded-none", defaultClassNames.range_middle),
         range_end: cn("bg-accent rounded-r-md", defaultClassNames.range_end),
-        today: cn(
-          "bg-accent text-accent-foreground rounded-md data-[selected=true]:rounded-none",
-          defaultClassNames.today,
-        ),
+        /*
+         * Today gets no fill. `--accent` is the brand red, so the shadcn
+         * default painted today as a red block that read like an error or a
+         * selection. Selection is the only state that should be highlighted.
+         */
+        today: cn(defaultClassNames.today),
         outside: cn(
           "text-muted-foreground aria-selected:text-muted-foreground",
           defaultClassNames.outside,

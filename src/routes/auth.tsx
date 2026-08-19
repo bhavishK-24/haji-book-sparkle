@@ -59,7 +59,11 @@ function AuthPage() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-sand px-4">
+    <main
+      id="main"
+      tabIndex={-1}
+      className="grid min-h-screen place-items-center bg-sand px-4 focus:outline-none"
+    >
       <div className="surface-card w-full max-w-sm p-8">
         <h1 className="font-display text-xl font-bold">{COMPANY.shortName} staff</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -67,7 +71,10 @@ function AuthPage() {
         </p>
         <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground" htmlFor="email">
+            <label
+              className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              htmlFor="email"
+            >
               Email
             </label>
             <input
@@ -79,7 +86,10 @@ function AuthPage() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground" htmlFor="password">
+            <label
+              className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              htmlFor="password"
+            >
               Password
             </label>
             <input
