@@ -18,6 +18,8 @@ export const Route = createFileRoute("/book/$category/extras")({
     variant: z.string().catch(""),
     /** Room configurator answers. See data/configured/url.ts. */
     room: z.string().catch(""),
+    /** Multi-item basket for per-piece services. See data/item-selection.ts. */
+    items: z.string().catch(""),
   }),
   head: () => ({ meta: [{ title: "Add extras | Haji Ahli" }] }),
   component: ExtrasPage,
@@ -37,7 +39,7 @@ const QUANTITY_LABEL: Record<string, string> = {
 
 function ExtrasPage() {
   const { category } = categoryRoute.useLoaderData();
-  const { service: serviceId, size, furnishing, variant, room } = Route.useSearch();
+  const { service: serviceId, size, furnishing, variant, room, items } = Route.useSearch();
   const navigate = useNavigate();
 
   const bookable = bookableInCategory(category);
@@ -63,7 +65,15 @@ function ExtrasPage() {
        * field here silently un-prices the booking three steps later, which is
        * exactly what happened to `variant` and `room`.
        */
-      search: { service: service.id, addons: selected.join(","), size, furnishing, variant, room },
+      search: {
+        service: service.id,
+        addons: selected.join(","),
+        size,
+        furnishing,
+        variant,
+        room,
+        items,
+      },
     });
 
   return (

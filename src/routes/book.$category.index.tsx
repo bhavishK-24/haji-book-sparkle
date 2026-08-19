@@ -14,6 +14,7 @@ import {
 } from "@/components/property-selector";
 import { Reveal } from "@/components/reveal";
 import { ServicePhoto } from "@/components/service-photo";
+import { ItemPicker } from "@/components/item-picker";
 import { WhatsAppQuotePanel } from "@/components/whatsapp-quote-panel";
 import { Button } from "@/components/ui/button";
 import { addOnsForService, isOnlineBookable, packageAdds, PACKAGE_SCOPE_COLUMNS } from "@/data";
@@ -27,6 +28,12 @@ import {
 } from "@/data/configured/engine";
 import { encodeRoomSelection } from "@/data/configured/url";
 import {
+  allowsMultipleItems,
+  encodeItems,
+  type ItemSelection,
+  itemCount,
+} from "@/data/item-selection";
+import {
   getBookingCategory,
   getCategoryPhoto,
   isEnquiryCategory,
@@ -37,6 +44,7 @@ import {
   formatAed,
   priceFrom,
   propertyRowsFor,
+  resolveItemsPrice,
   resolvePropertyPrice,
   resolveUnitPrice,
   unitRowsFor,
@@ -99,8 +107,11 @@ function ChooseService() {
   const [kitchen, setKitchen] = useState(emptyKitchenSelection);
   const [bathroom, setBathroom] = useState(emptyBathroomSelection);
 
-  /* Sofas, mattresses and tanks price by the item the customer picks. */
+  /* Band-priced services — windows, curtain steaming — take one choice. */
   const [variant, setVariant] = useState<string | null>(null);
+
+  /* Services sold by the piece take a basket: 1 two-seater and 2 recliners. */
+  const [items, setItems] = useState<ItemSelection>({});
 
   /*
    * What each tier turns on that the tier below does not. Only meaningful in a
@@ -122,8 +133,17 @@ function ChooseService() {
     selected && unitRowsFor(selected.id).some((r) => r.priceExVat !== null),
   );
 
+  /* Sold by the piece, so the customer builds a basket rather than picking one. */
+  const multiItem = Boolean(selected && allowsMultipleItems(selected.id));
+  const chosenCount = itemCount(items);
+
+  /** What one of them is called, for the picker's labels and counts. */
+  const unitNoun = !selected
+    ? "item"
+    : (unitRowsFor(selected.id)[0]?.unit ?? "").replace(/^per\s+/i, "").toLowerCase() || "item";
+
   const needsProperty = sizedByProperty && (!size || !furnishing);
-  const needsVariant = sellsByUnit && !variant;
+  const needsVariant = sellsByUnit && (multiItem ? chosenCount === 0 : !variant);
 
   /* The figure the panel shows for whatever is currently selected. */
   const selectedOutcome = !selected
@@ -141,14 +161,19 @@ function ChooseService() {
    */
   const selectedPrice = !selected
     ? null
-    : variant && sellsByUnit
-      ? applyMinimumBookingValue(resolveUnitPrice(selected.id, variant))
-      : size && !needsProperty
-        ? applyMinimumBookingValue(resolvePropertyPrice(selected.id, size, furnishing))
-        : priceFrom(selected.id);
+    : multiItem && chosenCount > 0
+      ? applyMinimumBookingValue(resolveItemsPrice(selected.id, items), selected.id)
+      : variant && sellsByUnit
+        ? applyMinimumBookingValue(resolveUnitPrice(selected.id, variant), selected.id)
+        : size && !needsProperty
+          ? applyMinimumBookingValue(resolvePropertyPrice(selected.id, size, furnishing))
+          : priceFrom(selected.id);
 
   const selectedIsExact = Boolean(
-    selected && ((size && !needsProperty) || (variant && sellsByUnit)) && selectedPrice,
+    selected &&
+    ((size && !needsProperty) ||
+      (sellsByUnit && (multiItem ? chosenCount > 0 : Boolean(variant)))) &&
+    selectedPrice,
   );
 
   const blockedReason = !selected
@@ -156,7 +181,9 @@ function ChooseService() {
     : needsProperty
       ? "Choose your property type above first"
       : needsVariant
-        ? "Choose which item you need cleaned"
+        ? multiItem
+          ? `Add at least one ${unitNoun} above`
+          : "Choose which item you need cleaned"
         : selectedOutcome?.kind === "needs-input"
           ? "Answer the questions to see your price"
           : null;
@@ -171,6 +198,7 @@ function ChooseService() {
     ...(size ? { size } : {}),
     ...(furnishing ? { furnishing } : {}),
     ...(variant ? { variant } : {}),
+    ...(multiItem && chosenCount > 0 ? { items: encodeItems(items) } : {}),
     ...(isConfigured(serviceId) ? { room: encodeRoomSelection(serviceId, kitchen, bathroom) } : {}),
   });
 
@@ -348,7 +376,30 @@ function ChooseService() {
                 ) : null}
 
                 {/* Unit-priced services need the item picked before they price. */}
-                {!isConfigured(selected.id) && sellsByUnit ? (
+                {/*
+                  Sold by the piece — sofas, carpets, mattresses, tanks — so
+                  several sizes can go into one visit. Bands like window
+                  cleaning stay a single choice, where picking two would mean
+                  nothing.
+                */}
+                {!isConfigured(selected.id) && sellsByUnit && multiItem ? (
+                  <div>
+                    <h3 className="text-[1.0625rem] font-semibold leading-snug">
+                      What do you need cleaned?
+                    </h3>
+                    <p className="mt-1.5 text-sm text-muted-foreground">
+                      Add as many as you like — they are all done in the same visit.
+                    </p>
+                    <div className="mt-4 max-w-md">
+                      <ItemPicker
+                        serviceId={selected.id}
+                        items={items}
+                        onChange={setItems}
+                        unitNoun={unitNoun}
+                      />
+                    </div>
+                  </div>
+                ) : !isConfigured(selected.id) && sellsByUnit ? (
                   <div>
                     <h3 className="text-[1.0625rem] font-semibold leading-snug">
                       Which one do you need cleaned?

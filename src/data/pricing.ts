@@ -191,6 +191,32 @@ export function resolveUnitPrice(serviceId: string, variantLabel: string): Resol
   return withVat(row.priceExVat, rowId(row), true, unitLabelOf(row));
 }
 
+/**
+ * The total for a basket of pieces, e.g. two 3-seaters and a recliner.
+ *
+ * Lives here rather than in `item-selection.ts` so every caller gets the same
+ * VAT treatment as any other price. The minimum booking value is deliberately
+ * NOT applied — that belongs to the finished order, and `applyMinimumBookingValue`
+ * is called once at the end.
+ */
+export function resolveItemsPrice(
+  serviceId: string,
+  items: Record<string, number>,
+): ResolvedPrice | null {
+  let exclusive = 0;
+  const chosen: string[] = [];
+
+  for (const row of unitRowsFor(serviceId)) {
+    const qty = items[row.label] ?? 0;
+    if (qty <= 0 || row.priceExVat === null) continue;
+    exclusive += row.priceExVat * qty;
+    chosen.push(`${row.label}×${qty}`);
+  }
+
+  if (chosen.length === 0) return null;
+  return withVat(exclusive, `${serviceId}/${chosen.join("+")}`, true, null);
+}
+
 // ── add-ons ─────────────────────────────────────────────────────────────────
 
 const addOnIndex = new Map<string, PriceRow[]>();

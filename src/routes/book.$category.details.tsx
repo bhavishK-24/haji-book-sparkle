@@ -14,7 +14,13 @@ import { addOnsForService, getAddOn, getService } from "@/data";
 import { isConfigured, priceBathroom, priceKitchen } from "@/data/configured/engine";
 import { roomSummaryFor } from "@/data/configured/summary";
 import { decodeBathroomSelection, decodeKitchenSelection } from "@/data/configured/url";
-import { applyMinimumBookingValue, resolvePropertyPrice, resolveUnitPrice } from "@/data/pricing";
+import {
+  applyMinimumBookingValue,
+  resolveItemsPrice,
+  resolvePropertyPrice,
+  resolveUnitPrice,
+} from "@/data/pricing";
+import { decodeItems, itemLines, itemsSummary } from "@/data/item-selection";
 import { bookableInCategory } from "@/data/booking-categories";
 import { track } from "@/lib/analytics";
 import { createBooking } from "@/lib/bookings.functions";
@@ -34,8 +40,10 @@ export const Route = createFileRoute("/book/$category/details")({
     furnishing: z.string().catch(""),
     /** Room configurator answers, for Kitchen and Bathroom. See configured/url.ts. */
     room: z.string().catch(""),
-    /** Chosen item for unit-priced services, e.g. "3 Seater". */
+    /** Chosen item for band-priced services, e.g. "3 Bedroom Villa". */
     variant: z.string().catch(""),
+    /** Multi-item basket for per-piece services. See data/item-selection.ts. */
+    items: z.string().catch(""),
   }),
   head: () => ({ meta: [{ title: "Your details | Haji Ahli" }] }),
   component: DetailsPage,
@@ -58,6 +66,7 @@ function DetailsPage() {
     furnishing,
     room,
     variant,
+    items: itemsRaw,
   } = Route.useSearch();
   const submit = useServerFn(createBooking);
   const [done, setDone] = useState(false);
@@ -90,6 +99,15 @@ function DetailsPage() {
       ? roomSummaryFor(service.id, decodeKitchenSelection(room), decodeBathroomSelection(room))
       : null;
 
+  /*
+   * The basket for per-piece services, re-read from the URL and validated
+   * against the catalogue rather than trusted. A hand-edited link can only ever
+   * produce fewer items, never a price for something we do not sell.
+   */
+  const basket = service ? decodeItems(itemsRaw, service.id) : {};
+  const basketSummary = service ? itemsSummary(service.id, basket) : null;
+  const basketLines = service ? itemLines(service.id, basket) : [];
+
   const price =
     roomOutcome?.kind === "priced"
       ? {
@@ -111,8 +129,10 @@ function DetailsPage() {
            * still read "price on quote".
            */
           applyMinimumBookingValue(
-            (variant ? resolveUnitPrice(service.id, variant) : null) ??
+            (Object.keys(basket).length > 0 ? resolveItemsPrice(service.id, basket) : null) ??
+              (variant ? resolveUnitPrice(service.id, variant) : null) ??
               (size ? resolvePropertyPrice(service.id, size, furnishing ?? null) : null),
+            service.id,
           );
 
   const mutation = useMutation({
@@ -196,6 +216,7 @@ function DetailsPage() {
             <PriceBreakdown
               className="mt-5"
               price={price}
+              lines={basketLines}
               label={selectedAddOns.length > 0 ? "Package" : "Service"}
               note={
                 selectedAddOns.length > 0
@@ -326,6 +347,8 @@ function DetailsPage() {
                        * oven and hood, not just that it cost AED 599.
                        */
                       roomSummary ? `${roomSummary}.` : "",
+                      /* What the crew is coming to clean, itemised. */
+                      basketSummary ? `Items: ${basketSummary}.` : "",
                       String(form.get("notes") ?? ""),
                     ]
                       .filter(Boolean)
@@ -481,7 +504,7 @@ function DetailsPage() {
                 <div className="sm:col-span-2">
                   <dt className="text-muted-foreground">Price</dt>
                   <dd className="mt-1.5">
-                    <PriceBreakdown price={price} label="Service" />
+                    <PriceBreakdown price={price} lines={basketLines} label="Service" />
                   </dd>
                 </div>
                 {selectedAddOns.length > 0 ? (

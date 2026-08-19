@@ -1,3 +1,4 @@
+import type { ItemLine } from "@/data/item-selection";
 import { VAT_RATE, formatAed, type ResolvedPrice } from "@/data/pricing";
 import { cn } from "@/lib/utils";
 
@@ -16,10 +17,13 @@ import { cn } from "@/lib/utils";
 export function PriceBreakdown({
   price,
   label = "Service",
+  lines,
   note,
   className,
 }: {
   price: ResolvedPrice | null;
+  /** Per-item lines, where the customer chose several pieces. */
+  lines?: ItemLine[] | null | undefined;
   /** What the base line is called, e.g. "Package". */
   label?: string;
   /** Optional line under the total, e.g. why extras are not included. */
@@ -37,10 +41,26 @@ export function PriceBreakdown({
   return (
     <div className={cn("rounded-xl border border-border bg-secondary/40 p-4", className)}>
       <dl className="space-y-2 text-sm">
-        <div className="flex items-baseline justify-between gap-4">
-          <dt className="text-muted-foreground">{label}</dt>
-          <dd className="tabular-nums">{formatAed(price.exclusive)}</dd>
-        </div>
+        {/*
+          Itemised where the customer built a basket. Someone booking two
+          sofas and a recliner is entitled to see which is which before they
+          commit, rather than one total they have to take on trust.
+        */}
+        {lines && lines.length > 0 ? (
+          lines.map((line) => (
+            <div key={line.label} className="flex items-baseline justify-between gap-4">
+              <dt className="text-muted-foreground">
+                {line.quantity} × {line.label}
+              </dt>
+              <dd className="tabular-nums">{formatAed(line.lineTotal)}</dd>
+            </div>
+          ))
+        ) : (
+          <div className="flex items-baseline justify-between gap-4">
+            <dt className="text-muted-foreground">{label}</dt>
+            <dd className="tabular-nums">{formatAed(price.exclusive)}</dd>
+          </div>
+        )}
 
         {price.liftedToMinimum ? (
           <p className="text-xs leading-snug text-muted-foreground">
