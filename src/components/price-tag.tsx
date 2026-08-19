@@ -66,12 +66,19 @@ export function PriceTag({
           <span className="text-sm font-medium text-muted-foreground">{price.unitLabel}</span>
         ) : null}
       </span>
-      <span className="mt-0.5 text-xs text-muted-foreground">
-        {vat === "inclusive"
-          ? `includes ${VAT_RATE * 100}% VAT · ${formatAed(price.exclusive)} before VAT`
-          : `${formatAed(price.inclusive)} including VAT`}
-        {price.liftedToMinimum ? " · minimum booking value" : ""}
-      </span>
+      {/*
+        The VAT-inclusive figure appears at checkout, not while browsing. In
+        exclusive mode the "+ VAT" beside the headline already says tax is
+        added; repeating the grossed-up number here put two prices on every
+        card and left the customer working out which one to compare.
+      */}
+      {vat === "inclusive" || price.liftedToMinimum ? (
+        <span className="mt-0.5 text-xs text-muted-foreground">
+          {vat === "inclusive"
+            ? `includes ${VAT_RATE * 100}% VAT · ${formatAed(price.exclusive)} before VAT`
+            : "minimum booking value"}
+        </span>
+      ) : null}
     </span>
   );
 }
