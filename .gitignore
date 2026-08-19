@@ -49,3 +49,8 @@ haji_ahli_assets/
 # Supabase CLI scratch state — machine-local, not project config.
 supabase/.temp/
 supabase/.branches/
+
+# This project uses npm. A stray Bun lockfile makes Cloudflare Workers Builds
+# detect Bun and run `bun install --frozen-lockfile` instead of npm.
+bun.lock
+bun.lockb
