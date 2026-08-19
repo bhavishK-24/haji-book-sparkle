@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, Check, Minus } from "lucide-react";
+import { ArrowRight, Check, MessageCircle, Minus } from "lucide-react";
 import { PriceTag } from "@/components/price-tag";
 import { Reveal } from "@/components/reveal";
 import { ServicePhoto } from "@/components/service-photo";
@@ -21,8 +21,10 @@ import {
   categoryForService,
   getCategoryPhoto,
 } from "@/data/booking-categories";
+import { isVideoQuoted } from "@/data/configured/engine";
 import { priceFrom } from "@/data/pricing";
 import { COMPANY } from "@/lib/company";
+import { WHATSAPP_MESSAGES, whatsappLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/services")({
@@ -240,6 +242,13 @@ function ServicesPage() {
                   const excluded = service.excluded;
                   const bookCategory = categoryForService(service.id);
                   const enquiry = isEnquiryOnly(service);
+                  /*
+                   * Kitchen and bathroom are enquiry-only, but not in the way
+                   * the generic branch assumes: they are quoted from a short
+                   * video on WhatsApp, not by a commercial quote form that asks
+                   * for none of what a coordinator needs to price a room.
+                   */
+                  const videoQuoted = isVideoQuoted(service.id);
 
                   return (
                     <Reveal
@@ -255,14 +264,18 @@ function ServicesPage() {
                             {service.nextDay === "available" && !enquiry ? (
                               <Badge tone="primary">Next-day available</Badge>
                             ) : null}
-                            {enquiry ? <Badge tone="muted">Quoted on site</Badge> : null}
+                            {videoQuoted ? (
+                              <Badge tone="muted">Price confirmed on WhatsApp</Badge>
+                            ) : enquiry ? (
+                              <Badge tone="muted">Quoted on site</Badge>
+                            ) : null}
                           </div>
 
                           {service.shortDescription ? (
                             <p className="lede mt-4 max-w-2xl">{service.shortDescription}</p>
                           ) : null}
 
-                          {!enquiry && priceFrom(service.id) ? (
+                          {(!enquiry || videoQuoted) && priceFrom(service.id) ? (
                             <div className="mt-5">
                               <PriceTag price={priceFrom(service.id)} prefix="From" />
                             </div>
@@ -279,8 +292,22 @@ function ServicesPage() {
                             <ScopeColumn heading="Not included" items={excluded} tone="excluded" />
                           </div>
 
+                          {videoQuoted ? (
+                            <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                              Send a short video of the room on WhatsApp and we confirm a fixed
+                              price and the next available slot — no on-site adjustment afterwards.
+                            </p>
+                          ) : null}
+
                           <div className="mt-9 flex flex-wrap gap-3">
-                            {enquiry || !bookCategory ? (
+                            {videoQuoted ? (
+                              <Button asChild variant="accent" className="group">
+                                <a href={whatsappLink(WHATSAPP_MESSAGES.videoQuote(service.name))}>
+                                  <MessageCircle className="size-4" aria-hidden />
+                                  Get a price on WhatsApp
+                                </a>
+                              </Button>
+                            ) : enquiry || !bookCategory ? (
                               <Button asChild variant="outline">
                                 <Link to="/business">Request a quote</Link>
                               </Button>

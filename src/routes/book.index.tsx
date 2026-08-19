@@ -78,9 +78,20 @@ function BookIndex() {
                     params={{ category: category.slug }}
                     className="group block"
                   >
+                    {/*
+                      Aspect pinned rather than left to "auto".
+
+                      Auto picks 4:5 for portrait sources and 3:2 for landscape
+                      ones, which suits a photo shown on its own. In a grid it
+                      breaks the row: eight of the nine category photos are
+                      portrait and the curtain one is landscape, so that single
+                      card came out short and wide against the rest. The photo
+                      crops to the shared frame instead.
+                    */}
                     <div className="overflow-hidden rounded-2xl bg-muted">
                       <ServicePhoto
                         photo={getCategoryPhoto(category)}
+                        aspect="aspect-4/5"
                         sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 30vw"
                         className="transition-transform duration-[900ms] ease-out group-hover:scale-[1.04]"
                       />
