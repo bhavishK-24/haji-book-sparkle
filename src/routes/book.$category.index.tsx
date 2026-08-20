@@ -1,5 +1,6 @@
 import { createFileRoute, getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowLeft, Check, Mail, Minus, PhoneCall, ShieldCheck } from "lucide-react";
+import { z } from "zod";
 import { useState } from "react";
 import { BookingPricePanel } from "@/components/booking-price-panel";
 import { BookingSteps } from "@/components/booking-steps";
@@ -53,6 +54,19 @@ import { COMPANY, PEST_WARRANTY } from "@/lib/company";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/book/$category/")({
+  /*
+   * `/services` links here with `?service=SVC-108` to open a specific service.
+   * Without a schema the parameter was accepted into the URL but never read,
+   * so "Book this service" landed on an unselected picker and the customer had
+   * to find the service again.
+   *
+   * `.catch("")` keeps a malformed value from failing the whole route; the id
+   * is checked against the category's own services below, so anything unknown
+   * simply preselects nothing.
+   */
+  validateSearch: z.object({
+    service: z.string().catch(""),
+  }),
   head: ({ params }) => {
     const category = getBookingCategory(params.category);
     return {
@@ -90,12 +104,28 @@ function ChooseService() {
   const hasComparison = comparisonColumns.length > 1;
 
   /*
-   * One service at a time. With a single service in the category there is
-   * nothing to choose, so it is selected from the start.
+   * One service at a time.
+   *
+   * The default comes from the URL — `?service=SVC-108` opens that service —
+   * falling back to the only service where a category has just one, and to
+   * nothing otherwise. The id is looked up in THIS category's services, so an
+   * unknown id, or a real id belonging to another category, preselects nothing
+   * rather than pointing at a service the page cannot show.
    */
-  const [selectedId, setSelectedId] = useState<string | null>(
-    services.length === 1 ? (services[0]?.id ?? null) : null,
-  );
+  const { service: requestedServiceId } = Route.useSearch();
+  const defaultId =
+    services.find((s) => s.id === requestedServiceId)?.id ??
+    (services.length === 1 ? (services[0]?.id ?? null) : null);
+
+  /*
+   * A click overrides the default. Scoped to the category on screen so that
+   * moving between categories cannot carry a stale selection across — the
+   * route component is not remounted when only the `$category` param changes.
+   */
+  const [chosen, setChosen] = useState<{ slug: string; id: string } | null>(null);
+  const selectedId = chosen?.slug === category.slug ? chosen.id : defaultId;
+  const setSelectedId = (id: string) => setChosen({ slug: category.slug, id });
+
   const selected = services.find((s) => s.id === selectedId) ?? null;
   const selectedIndex = selected ? services.indexOf(selected) : -1;
 
