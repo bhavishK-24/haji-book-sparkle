@@ -45,7 +45,12 @@ function SchedulePage() {
   const bookable = bookableInCategory(category);
   // Fall back to the first bookable option if the URL carries an unknown id.
   const service = (serviceId ? getService(serviceId) : undefined) ?? bookable[0] ?? undefined;
-  const addOnIds = addons ? addons.split(",").filter(Boolean) : [];
+  /*
+   * Only used to decide whether the extras step counts towards the step
+   * numbering. Split on both separators: the parameter now carries variants
+   * and quantities joined by ";", and used to be a bare comma-separated list.
+   */
+  const addOnIds = addons ? addons.split(/[;,]/).filter(Boolean) : [];
   const hasExtras = service ? addOnsForService(service).length > 0 : false;
 
   const [date, setDate] = useState<Date | undefined>(undefined);

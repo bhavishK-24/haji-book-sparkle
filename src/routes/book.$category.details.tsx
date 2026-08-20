@@ -10,7 +10,7 @@ import { BookingSteps } from "@/components/booking-steps";
 import { PriceBreakdown } from "@/components/price-breakdown";
 import { Reveal } from "@/components/reveal";
 import { Button } from "@/components/ui/button";
-import { addOnsForService, getAddOn, getService } from "@/data";
+import { addOnsForService, getService } from "@/data";
 import { isConfigured, priceBathroom, priceKitchen } from "@/data/configured/engine";
 import { roomSummaryFor } from "@/data/configured/summary";
 import { decodeBathroomSelection, decodeKitchenSelection } from "@/data/configured/url";
@@ -19,7 +19,16 @@ import {
   resolveItemsPrice,
   resolvePropertyPrice,
   resolveUnitPrice,
+  VAT_RATE,
+  type ResolvedPrice,
 } from "@/data/pricing";
+import {
+  addOnLines,
+  addOnsSummary,
+  decodeAddOns,
+  unpricedAddOns,
+  type AddOnContext,
+} from "@/data/addon-selection";
 import { decodeItems, itemLines, itemsSummary } from "@/data/item-selection";
 import { bookableInCategory } from "@/data/booking-categories";
 import { track } from "@/lib/analytics";
@@ -51,6 +60,29 @@ export const Route = createFileRoute("/book/$category/details")({
 
 const categoryRoute = getRouteApi("/book/$category");
 
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
+/**
+ * Base price plus the chosen extras, as one figure.
+ *
+ * The minimum booking value is applied to the sum rather than to the base
+ * alone: a 79 one-seater with a 99 refrigerator clean is a 178 visit that
+ * clears the floor on its own, and flooring the base first would charge the
+ * customer for a minimum they had already met.
+ */
+function withExtras(
+  base: ResolvedPrice,
+  extras: number,
+  serviceId: string | null,
+  /** Room pricing applies its own floor, so it must not be floored twice. */
+  preFloored: boolean,
+): ResolvedPrice {
+  const summed: ResolvedPrice = { ...base, exclusive: base.exclusive + extras };
+  const floored = preFloored ? summed : (applyMinimumBookingValue(summed, serviceId) ?? summed);
+  const vat = round2(floored.exclusive * VAT_RATE);
+  return { ...floored, vat, inclusive: round2(floored.exclusive + vat) };
+}
+
 const field =
   "w-full rounded-lg border border-input bg-card px-3.5 py-2.5 text-sm text-foreground outline-none transition-colors duration-[var(--dur-fast)] focus:border-primary";
 const label = "mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground";
@@ -74,14 +106,32 @@ function DetailsPage() {
 
   const bookable = bookableInCategory(category);
   const service = (serviceId ? getService(serviceId) : undefined) ?? bookable[0];
-  const selectedAddOns = (addons ? addons.split(",").filter(Boolean) : [])
-    .map(getAddOn)
-    .filter((a): a is NonNullable<typeof a> => Boolean(a));
-  const hasExtras = service ? addOnsForService(service).length > 0 : false;
   /*
-   * Base package price only. Add-ons are unpriced, so the total is confirmed
-   * on the call rather than shown as if it were final.
-   *
+   * Extras, decoded from the URL and re-priced here rather than trusted. Each
+   * carries the variant and quantity chosen on the extras step — those were
+   * collected and then dropped on the way here, so the checkout knew only
+   * which boxes had been ticked and charged for none of them.
+   */
+  const offeredAddOns = service ? addOnsForService(service) : [];
+  /* The Intense upgrade prices off the property, so it has to travel along. */
+  const addOnCtx: AddOnContext = { size, furnishing };
+  const addOnSelection = decodeAddOns(addons, offeredAddOns);
+  const selectedAddOns = offeredAddOns.filter((a) => addOnSelection[a.id]);
+  const extrasLines = addOnLines(offeredAddOns, addOnSelection, addOnCtx);
+  const extrasSubtotal = extrasLines.reduce((sum, l) => sum + l.lineTotal, 0);
+  const extrasOnQuote = unpricedAddOns(offeredAddOns, addOnSelection, addOnCtx);
+  const extrasSummary = addOnsSummary(offeredAddOns, addOnSelection, addOnCtx);
+  const hasExtras = offeredAddOns.length > 0;
+
+  /* Only extras we genuinely cannot price still need a caveat under the total. */
+  const extrasNote =
+    extrasOnQuote.length > 0
+      ? `${extrasOnQuote.map((a) => a.name).join(" and ")} ${
+          extrasOnQuote.length > 1 ? "are" : "is"
+        } quoted separately and is not included above.`
+      : null;
+
+  /*
    * Kitchen and Bathroom are re-priced here from the answers in the URL rather
    * than trusting a figure passed along with them — the price the customer is
    * asked to confirm is always computed from their actual selections.
@@ -108,7 +158,7 @@ function DetailsPage() {
   const basketSummary = service ? itemsSummary(service.id, basket) : null;
   const basketLines = service ? itemLines(service.id, basket) : [];
 
-  const price =
+  const basePrice: ResolvedPrice | null =
     roomOutcome?.kind === "priced"
       ? {
           exclusive: roomOutcome.exclusive,
@@ -128,12 +178,44 @@ function DetailsPage() {
            * water tank reached this page with a real price on the sheet and
            * still read "price on quote".
            */
-          applyMinimumBookingValue(
-            (Object.keys(basket).length > 0 ? resolveItemsPrice(service.id, basket) : null) ??
-              (variant ? resolveUnitPrice(service.id, variant) : null) ??
-              (size ? resolvePropertyPrice(service.id, size, furnishing ?? null) : null),
-            service.id,
-          );
+          ((Object.keys(basket).length > 0 ? resolveItemsPrice(service.id, basket) : null) ??
+          (variant ? resolveUnitPrice(service.id, variant) : null) ??
+          (size ? resolvePropertyPrice(service.id, size, furnishing ?? null) : null));
+
+  /*
+   * The extras belong in the total, not in a footnote under it. They used to
+   * be listed by name beneath a line saying the price "covers the package
+   * only", so every booking with an extra quoted a figure the customer was
+   * not going to be charged.
+   */
+  const price =
+    basePrice === null
+      ? null
+      : withExtras(basePrice, extrasSubtotal, service?.id ?? null, roomOutcome?.kind === "priced");
+
+  /*
+   * One line per thing being paid for. Where extras are present the base has
+   * to become a line of its own, otherwise the breakdown lists the extras and
+   * silently swallows the package they attach to.
+   */
+  const summaryLines =
+    extrasLines.length === 0
+      ? basketLines
+      : [
+          ...(basketLines.length > 0
+            ? basketLines
+            : basePrice
+              ? [
+                  {
+                    label: service?.name ?? "Service",
+                    quantity: 1,
+                    unitPrice: basePrice.exclusive,
+                    lineTotal: basePrice.exclusive,
+                  },
+                ]
+              : []),
+          ...extrasLines,
+        ];
 
   const mutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) => submit({ data: payload as never }),
@@ -201,9 +283,7 @@ function DetailsPage() {
               {selectedAddOns.length > 0 ? (
                 <div>
                   <dt className="text-muted-foreground">Extras</dt>
-                  <dd className="mt-1 font-medium">
-                    {selectedAddOns.map((a) => a.name).join(", ")}
-                  </dd>
+                  <dd className="mt-1 font-medium">{extrasSummary}</dd>
                 </div>
               ) : null}
             </dl>
@@ -215,13 +295,9 @@ function DetailsPage() {
             <PriceBreakdown
               className="mt-5"
               price={price}
-              lines={basketLines}
+              lines={summaryLines}
               label={selectedAddOns.length > 0 ? "Package" : "Service"}
-              note={
-                selectedAddOns.length > 0
-                  ? "Extras are priced separately and confirmed with your booking, so this covers the package only."
-                  : null
-              }
+              note={extrasNote}
             />
           </div>
 
@@ -324,11 +400,18 @@ function DetailsPage() {
                     price_amount: price ? price.exclusive : null,
                     property_size: size,
                     furnishing,
-                    add_ons: selectedAddOns.map((a) => ({
-                      id: a.id,
-                      name: a.name,
-                      quantity: null,
-                    })),
+                    add_ons: selectedAddOns.map((a) => {
+                      const choice = addOnSelection[a.id];
+                      return {
+                        id: a.id,
+                        /* The variant is part of what was ordered, not a note. */
+                        name: (choice?.variant ? `${a.name} — ${choice.variant}` : a.name).slice(
+                          0,
+                          120,
+                        ),
+                        quantity: choice?.quantity ?? 1,
+                      };
+                    }),
                     booking_date: date,
                     time_slot: time,
                     /*
@@ -337,9 +420,7 @@ function DetailsPage() {
                      * sending them separately would lose them without error.
                      */
                     notes: [
-                      selectedAddOns.length
-                        ? `Extras requested: ${selectedAddOns.map((a) => a.name).join(", ")}.`
-                        : "",
+                      extrasSummary ? `Extras requested: ${extrasSummary}.` : "",
                       /*
                        * The room answers matter as much as the price: the crew
                        * needs to know it is a neglected standard kitchen with an
@@ -504,7 +585,12 @@ function DetailsPage() {
                 <div className="sm:col-span-2">
                   <dt className="text-muted-foreground">Price</dt>
                   <dd className="mt-1.5">
-                    <PriceBreakdown price={price} lines={basketLines} label="Service" />
+                    <PriceBreakdown
+                      price={price}
+                      lines={summaryLines}
+                      label="Service"
+                      note={extrasNote}
+                    />
                   </dd>
                 </div>
                 {selectedAddOns.length > 0 ? (
@@ -512,11 +598,21 @@ function DetailsPage() {
                     <dt className="text-muted-foreground">Extras</dt>
                     <dd className="mt-1.5">
                       <ul className="space-y-1.5">
-                        {selectedAddOns.map((a) => (
-                          <li key={a.id} className="font-medium leading-snug">
-                            {a.name}
-                          </li>
-                        ))}
+                        {selectedAddOns.map((a) => {
+                          const choice = addOnSelection[a.id];
+                          return (
+                            <li key={a.id} className="font-medium leading-snug">
+                              {choice && choice.quantity > 1 ? `${choice.quantity} × ` : ""}
+                              {a.name}
+                              {choice?.variant ? (
+                                <span className="font-normal text-muted-foreground">
+                                  {" "}
+                                  — {choice.variant}
+                                </span>
+                              ) : null}
+                            </li>
+                          );
+                        })}
                       </ul>
                     </dd>
                   </div>

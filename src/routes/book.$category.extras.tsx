@@ -1,12 +1,24 @@
 import { createFileRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Check, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Info, Minus, Plus } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 import { BookingSteps } from "@/components/booking-steps";
 import { Reveal } from "@/components/reveal";
 import { Button } from "@/components/ui/button";
 import { availableAddOns, getService, suppressedBy } from "@/data";
+import {
+  addOnFromPrice,
+  addOnTakesQuantity,
+  addOnUnitPrice,
+  addOnVariantsFor,
+  addOnsSubtotal,
+  encodeAddOns,
+  MAX_PER_ADDON,
+  type AddOnContext,
+  type AddOnSelection,
+} from "@/data/addon-selection";
 import { bookableInCategory } from "@/data/booking-categories";
+import { formatAed } from "@/data/pricing";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/book/$category/extras")({
@@ -27,14 +39,11 @@ export const Route = createFileRoute("/book/$category/extras")({
 
 const categoryRoute = getRouteApi("/book/$category");
 
-/** Human label for the quantity a per-unit add-on needs. */
-const QUANTITY_LABEL: Record<string, string> = {
-  mattresses: "How many mattresses?",
-  seats: "How many seats?",
-  squareMetres: "Approximate area (m²)",
-  bathrooms: "How many bathrooms?",
-  balconies: "How many balconies?",
-  panels: "How many curtain panels?",
+/** How the variant list should be introduced, by what the add-on is priced per. */
+const VARIANT_LABEL: Record<string, string> = {
+  mattresses: "Which size?",
+  seats: "Which sofa?",
+  squareMetres: "Which size carpet?",
 };
 
 function ExtrasPage() {
@@ -45,16 +54,52 @@ function ExtrasPage() {
   const bookable = bookableInCategory(category);
   const service = (serviceId ? getService(serviceId) : undefined) ?? bookable[0];
 
-  const [selected, setSelected] = useState<string[]>([]);
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [selection, setSelection] = useState<AddOnSelection>({});
 
   if (!service) return null;
 
-  const offered = availableAddOns(service, selected);
-  const hiddenNotes = suppressedBy(selected);
+  /*
+   * The Intense upgrade is priced as the gap between Deep and Intense for this
+   * customer's own property, so the property they chose two steps ago has to
+   * travel with them to be able to show a figure here.
+   */
+  const ctx: AddOnContext = { size, furnishing };
 
+  const selectedIds = Object.keys(selection);
+  const offered = availableAddOns(service, selectedIds);
+  const hiddenNotes = suppressedBy(selectedIds);
+  const subtotal = addOnsSubtotal(offered, selection, ctx);
+
+  /** Ticking an add-on takes the first variant the workbook lists, so it always has a price. */
   const toggle = (id: string) =>
-    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setSelection((prev) => {
+      const next = { ...prev };
+      if (next[id]) {
+        delete next[id];
+        return next;
+      }
+      next[id] = { variant: addOnVariantsFor(id)[0] ?? null, quantity: 1 };
+      return next;
+    });
+
+  const setVariant = (id: string, value: string) =>
+    setSelection((prev) => {
+      const current = prev[id];
+      if (!current) return prev;
+      return { ...prev, [id]: { ...current, variant: value } };
+    });
+
+  const setQuantity = (id: string, quantity: number) =>
+    setSelection((prev) => {
+      const current = prev[id];
+      if (!current) return prev;
+      if (quantity < 1) {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      }
+      return { ...prev, [id]: { ...current, quantity: Math.min(quantity, MAX_PER_ADDON) } };
+    });
 
   const goOn = () =>
     navigate({
@@ -63,11 +108,12 @@ function ExtrasPage() {
       /*
        * Everything the customer has chosen so far rides along. Dropping a
        * field here silently un-prices the booking three steps later, which is
-       * exactly what happened to `variant` and `room`.
+       * exactly what happened to `variant` and `room` — and to the quantities
+       * on this page, which were collected and then thrown away.
        */
       search: {
         service: service.id,
-        addons: selected.join(","),
+        addons: encodeAddOns(selection),
         size,
         furnishing,
         variant,
@@ -110,7 +156,20 @@ function ExtrasPage() {
 
         <div className="mt-12 grid max-w-3xl gap-3">
           {offered.map((addOn, i) => {
-            const isOn = selected.includes(addOn.id);
+            const choice = selection[addOn.id];
+            const isOn = Boolean(choice);
+            const variants = addOnVariantsFor(addOn.id);
+            const takesQuantity = addOnTakesQuantity(addOn);
+
+            /*
+             * Before it is ticked, the cheapest variant with a "from". Once it
+             * is ticked, the price of what they actually chose, times how many.
+             */
+            const unit = isOn
+              ? addOnUnitPrice(addOn.id, choice?.variant ?? null, ctx)
+              : addOnFromPrice(addOn.id, ctx);
+            const lineTotal = unit && choice ? unit.exclusive * choice.quantity : null;
+
             return (
               <Reveal key={addOn.id} delay={Math.min(i, 5) * 50}>
                 <div
@@ -138,8 +197,30 @@ function ExtrasPage() {
                       ) : null}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block font-display text-base font-semibold tracking-tight">
-                        {addOn.name}
+                      <span className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                        <span className="font-display text-base font-semibold tracking-tight">
+                          {addOn.name}
+                        </span>
+                        {/*
+                          The price sits on the same line as the name, because
+                          an extras list without figures is a list of things a
+                          customer is afraid to tick.
+                        */}
+                        <span className="shrink-0 text-sm font-semibold tabular-nums">
+                          {unit ? (
+                            <>
+                              {!isOn && variants.length > 1 ? (
+                                <span className="font-normal text-muted-foreground">from </span>
+                              ) : null}
+                              {formatAed(unit.exclusive)}
+                              <span className="font-normal text-muted-foreground"> + VAT</span>
+                            </>
+                          ) : (
+                            <span className="font-medium text-muted-foreground">
+                              Price on quote
+                            </span>
+                          )}
+                        </span>
                       </span>
                       {addOn.description ? (
                         <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">
@@ -149,26 +230,83 @@ function ExtrasPage() {
                     </span>
                   </label>
 
-                  {/* Per-unit add-ons need a count before we can price or time them. */}
-                  {isOn && addOn.quantityInput ? (
+                  {isOn && variants.length > 0 ? (
                     <div className="border-t border-border/70 px-5 py-4">
-                      <label
-                        className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground"
-                        htmlFor={`qty-${addOn.id}`}
-                      >
-                        {QUANTITY_LABEL[addOn.quantityInput] ?? "Quantity"}
-                      </label>
-                      <input
-                        id={`qty-${addOn.id}`}
-                        type="number"
-                        min={1}
-                        inputMode="numeric"
-                        value={quantities[addOn.id] ?? ""}
-                        onChange={(e) =>
-                          setQuantities((q) => ({ ...q, [addOn.id]: Number(e.target.value) }))
-                        }
-                        className="mt-2 w-32 rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:border-primary"
-                      />
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        {(addOn.quantityInput && VARIANT_LABEL[addOn.quantityInput]) ??
+                          "Which one?"}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {variants.map((v) => {
+                          const vPrice = addOnUnitPrice(addOn.id, v, ctx);
+                          const active = choice?.variant === v;
+                          return (
+                            <button
+                              key={v}
+                              type="button"
+                              onClick={() => setVariant(addOn.id, v)}
+                              aria-pressed={active}
+                              className={cn(
+                                "rounded-full border px-3.5 py-1.5 text-sm transition-colors duration-[var(--dur-base)]",
+                                active
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-input hover:border-primary",
+                              )}
+                            >
+                              {v}
+                              {vPrice ? (
+                                <span
+                                  className={cn(
+                                    "ml-2 tabular-nums",
+                                    active ? "opacity-80" : "text-muted-foreground",
+                                  )}
+                                >
+                                  {formatAed(vPrice.exclusive)}
+                                </span>
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {/* Per-unit add-ons need a count before we can price them. */}
+                  {isOn && takesQuantity ? (
+                    <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/70 px-5 py-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        How many?
+                      </p>
+                      <div className="flex items-center gap-3">
+                        {lineTotal !== null && (choice?.quantity ?? 0) > 1 ? (
+                          <span className="text-sm font-semibold tabular-nums">
+                            {formatAed(lineTotal)}
+                            <span className="font-normal text-muted-foreground"> + VAT</span>
+                          </span>
+                        ) : null}
+                        <div className="flex shrink-0 items-center gap-1 rounded-full border border-border p-0.5">
+                          <button
+                            type="button"
+                            onClick={() => setQuantity(addOn.id, (choice?.quantity ?? 1) - 1)}
+                            aria-label={`One fewer ${addOn.name}`}
+                            className="grid size-8 place-items-center rounded-full transition-colors duration-[var(--dur-base)] hover:bg-secondary"
+                          >
+                            <Minus className="size-3.5" aria-hidden />
+                          </button>
+                          <output className="min-w-7 text-center text-sm font-bold tabular-nums">
+                            {choice?.quantity ?? 1}
+                          </output>
+                          <button
+                            type="button"
+                            onClick={() => setQuantity(addOn.id, (choice?.quantity ?? 1) + 1)}
+                            disabled={(choice?.quantity ?? 1) >= MAX_PER_ADDON}
+                            aria-label={`One more ${addOn.name}`}
+                            className="grid size-8 place-items-center rounded-full transition-colors duration-[var(--dur-base)] hover:bg-secondary disabled:opacity-30 disabled:hover:bg-transparent"
+                          >
+                            <Plus className="size-3.5" aria-hidden />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   ) : null}
                 </div>
@@ -195,19 +333,34 @@ function ExtrasPage() {
 
         <div className="sticky bottom-0 z-30 mt-14 border-t border-border bg-background/90 py-5 backdrop-blur-lg">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="text-sm text-muted-foreground">
-              {selected.length === 0
-                ? "No extras selected"
-                : `${selected.length} extra${selected.length > 1 ? "s" : ""} selected`}
-            </p>
+            <div>
+              <p className="text-sm text-muted-foreground">
+                {selectedIds.length === 0
+                  ? "No extras selected"
+                  : `${selectedIds.length} extra${selectedIds.length > 1 ? "s" : ""} selected`}
+              </p>
+              {/*
+                A running total, so the customer knows what ticking one more
+                box costs before they reach the last step and find out.
+              */}
+              {subtotal > 0 ? (
+                <p className="mt-0.5 font-display text-lg font-bold tabular-nums">
+                  {formatAed(subtotal)}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {" "}
+                    + VAT in extras
+                  </span>
+                </p>
+              ) : null}
+            </div>
             <div className="flex flex-wrap gap-3">
-              {selected.length > 0 ? (
-                <Button variant="outline" size="lg" onClick={() => setSelected([])}>
+              {selectedIds.length > 0 ? (
+                <Button variant="outline" size="lg" onClick={() => setSelection({})}>
                   Clear
                 </Button>
               ) : null}
               <Button size="lg" variant="accent" className="group" onClick={goOn}>
-                {selected.length === 0 ? "Skip and choose a date" : "Continue to date & time"}
+                {selectedIds.length === 0 ? "Skip and choose a date" : "Continue to date & time"}
                 <ArrowRight className="transition-transform duration-[var(--dur-base)] group-hover:translate-x-0.5" />
               </Button>
             </div>
