@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { WhatsAppButton } from "@/components/whatsapp-button";
 import { initAnalytics, trackPageView } from "@/lib/analytics";
+import { canonicalUrl, localBusinessJsonLd } from "@/lib/seo";
 
 function NotFoundComponent() {
   return (
@@ -106,6 +108,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: localBusinessJsonLd(),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -114,10 +122,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  /*
+   * The canonical lives here rather than in every route head: it is derived
+   * from the path, so one place can serve all of them, and a new route cannot
+   * ship without one.
+   */
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
+        <link rel="canonical" href={canonicalUrl(pathname)} />
       </head>
       <body>
         <a href="#main" className="skip-link">

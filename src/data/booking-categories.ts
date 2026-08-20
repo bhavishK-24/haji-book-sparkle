@@ -29,6 +29,18 @@ export type BookingCategory = {
    */
   chooseHint: string | null;
   /**
+   * Search-facing title and description for this category page.
+   *
+   * Required, not optional: a new category must not ship with the generic
+   * "Book <name>" title, which leads with our verb rather than the service the
+   * customer searched for and carries no location.
+   *
+   * Written from the services the category actually contains — nothing here
+   * claims work that is not in `serviceIds`.
+   */
+  seoTitle: string;
+  seoDescription: string;
+  /**
    * Whether the services here form a ladder — each tier containing the one
    * below — so a side-by-side table and "everything in X, plus…" make sense.
    *
@@ -44,6 +56,9 @@ export type BookingCategory = {
 export const BOOKING_CATEGORIES: BookingCategory[] = [
   {
     slug: "home-cleaning",
+    seoTitle: "Deep Cleaning Services in Dubai | Haji Ahli",
+    seoDescription:
+      "Whole-home deep and intense deep cleaning for apartments and villas in Dubai. Kitchen, bathrooms and balcony included, with equipment and materials supplied.",
     name: "Home cleaning",
     tagline: "Deep and intense packages for the whole property.",
     intro:
@@ -57,6 +72,9 @@ export const BOOKING_CATEGORIES: BookingCategory[] = [
   },
   {
     slug: "room-cleaning",
+    seoTitle: "Kitchen & Bathroom Deep Cleaning in Dubai | Haji Ahli",
+    seoDescription:
+      "Intense deep cleaning for a single kitchen, bathroom or balcony in Dubai. Send a short video and we confirm a fixed price before we come.",
     name: "Single rooms",
     tagline: "Kitchen, bathroom or balcony taken on their own.",
     intro:
@@ -68,6 +86,9 @@ export const BOOKING_CATEGORIES: BookingCategory[] = [
   },
   {
     slug: "soft-furnishing",
+    seoTitle: "Sofa, Carpet & Mattress Cleaning in Dubai | Haji Ahli",
+    seoDescription:
+      "Hot-water extraction shampooing for sofas, carpets and mattresses in Dubai. Book several pieces in one visit, with prices per item.",
     name: "Sofas, carpets & mattresses",
     tagline: "Hot-water extraction for upholstery and floors.",
     intro:
@@ -78,6 +99,9 @@ export const BOOKING_CATEGORIES: BookingCategory[] = [
   },
   {
     slug: "curtains-linen",
+    seoTitle: "Curtain Cleaning & Steam Ironing in Dubai | Haji Ahli",
+    seoDescription:
+      "Curtains taken down, laundered and re-fixed, on-site steam ironing, hotel laundry and linen, and curtain supply and stitching across Dubai.",
     name: "Curtains & linen",
     tagline: "Taken down, laundered, steam ironed and re-fixed.",
     intro:
@@ -89,6 +113,9 @@ export const BOOKING_CATEGORIES: BookingCategory[] = [
   },
   {
     slug: "pest-control",
+    seoTitle: "Pest Control Services in Dubai | Haji Ahli",
+    seoDescription:
+      "Treatment for cockroaches, ants, bed bugs, rodents and flying insects in Dubai, plus external perimeter and disinfection. Covered by a three-month warranty.",
     name: "Pest control",
     tagline: "One package covering five pest types, or a single treatment.",
     intro:
@@ -109,6 +136,9 @@ export const BOOKING_CATEGORIES: BookingCategory[] = [
   },
   {
     slug: "windows-glass",
+    seoTitle: "Window & Glass Cleaning in Dubai | Haji Ahli",
+    seoDescription:
+      "Internal and external window cleaning for homes and commercial buildings in Dubai, including frames, tracks and high-level facade glazing.",
     name: "Windows & glass",
     tagline: "Internal and external glass, frames and tracks.",
     intro:
@@ -119,6 +149,9 @@ export const BOOKING_CATEGORIES: BookingCategory[] = [
   },
   {
     slug: "floor-care",
+    seoTitle: "Marble Polishing & Floor Restoration in Dubai | Haji Ahli",
+    seoDescription:
+      "Marble and natural stone restoration in Dubai — grinding, honing, polishing and crystallisation, from a refresh through to full resurfacing.",
     name: "Marble & floor care",
     tagline: "Grinding, honing, polishing and crystallisation.",
     intro:
@@ -129,6 +162,9 @@ export const BOOKING_CATEGORIES: BookingCategory[] = [
   },
   {
     slug: "water-tank",
+    seoTitle: "Water Tank Cleaning & Disinfection in Dubai | Haji Ahli",
+    seoDescription:
+      "Draining, cleaning and disinfection of water storage tanks in Dubai, rooftop or underground, with before and after documentation.",
     name: "Water tank cleaning",
     tagline: "Draining, cleaning and disinfection, with documentation.",
     intro:
@@ -139,6 +175,9 @@ export const BOOKING_CATEGORIES: BookingCategory[] = [
   },
   {
     slug: "maintenance",
+    seoTitle: "Painting, Plumbing & Maintenance Services in Dubai | Haji Ahli",
+    seoDescription:
+      "Painting, tiling and flooring, plumbing, carpentry and annual maintenance contracts for homes and commercial premises in Dubai. Scoped on site.",
     name: "Maintenance & repairs",
     tagline: "Painting, tiling, plumbing and carpentry.",
     intro:

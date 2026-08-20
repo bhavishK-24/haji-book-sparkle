@@ -78,8 +78,16 @@ export const Route = createFileRoute("/book/$category/")({
     const category = getBookingCategory(params.category);
     return {
       meta: [
-        { title: category ? `Book ${category.name} | Haji Ahli UAE` : "Book | Haji Ahli" },
-        { name: "description", content: category?.intro ?? "" },
+        /*
+         * The search-facing title and description live with the category data,
+         * so the nine pages cannot drift apart in tone and a new category is a
+         * compile error until it has both.
+         */
+        { title: category?.seoTitle ?? "Book a Service | Haji Ahli" },
+        { name: "description", content: category?.seoDescription ?? "" },
+        { property: "og:title", content: category?.seoTitle ?? "Book a Service | Haji Ahli" },
+        { property: "og:description", content: category?.seoDescription ?? "" },
+        { property: "og:type", content: "website" },
       ],
     };
   },
