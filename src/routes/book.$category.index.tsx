@@ -60,12 +60,19 @@ export const Route = createFileRoute("/book/$category/")({
    * so "Book this service" landed on an unselected picker and the customer had
    * to find the service again.
    *
-   * `.catch("")` keeps a malformed value from failing the whole route; the id
-   * is checked against the category's own services below, so anything unknown
-   * simply preselects nothing.
+   * Optional, and deliberately NOT `.catch("")`. A catch always produces a
+   * value, so the router materialised it into the URL and every bare
+   * `/book/<category>` answered 307 to `/book/<category>?service=` — which put
+   * a redirect behind all nine category URLs in the sitemap. Optional leaves an
+   * absent parameter absent.
+   *
+   * `.catch(undefined)` still guards a malformed value, such as the array a
+   * repeated `?service=a&service=b` produces, without reintroducing a default.
+   * The id is checked against the category's own services below, so anything
+   * unknown simply preselects nothing.
    */
   validateSearch: z.object({
-    service: z.string().catch(""),
+    service: z.string().optional().catch(undefined),
   }),
   head: ({ params }) => {
     const category = getBookingCategory(params.category);
