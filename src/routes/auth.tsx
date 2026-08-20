@@ -9,6 +9,12 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Staff Login | Haji Ahli Cleaning & Maintenance" },
+      /*
+       * Leaving this out of the sitemap is only a hint — a sitemap says what to
+       * crawl, not what to skip, and robots.txt allows everything. This
+       * directive is what actually keeps the staff login out of search results.
+       */
+      { name: "robots", content: "noindex, nofollow" },
       {
         name: "description",
         content:
