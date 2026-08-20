@@ -126,12 +126,12 @@ const PROCESS = [
     body: "Next-day availability on most residential services, seven days a week.",
   },
   {
-    title: "We confirm by phone",
-    body: "A coordinator confirms access, scope and price before dispatch.",
+    title: "We confirm your booking",
+    body: "A confirmation email lands with your reference, price and arrival window.",
   },
   {
-    title: "Crew arrives equipped",
-    body: "Equipment, materials and supervision included. You inspect before sign-off.",
+    title: "Your crew arrives equipped",
+    body: "We brief the crew, who bring equipment, materials and supervision. You inspect before sign-off.",
   },
 ];
 
@@ -308,7 +308,7 @@ function Home() {
                 <p className="eyebrow">Book in three steps</p>
                 <h2 className="display-lg mt-5">What do you need done?</h2>
                 <p className="lede mt-5">
-                  Pick a category, choose a date, and we confirm by phone.
+                  Pick a category, choose a date, and we email your confirmation.
                 </p>
               </div>
               <Button asChild variant="outline" size="lg">
@@ -370,13 +370,12 @@ function Home() {
                 </h3>
                 <p className="lede mt-5 max-w-md">
                   Pick your service and a date online. Next-day slots are available on most
-                  residential work, and a coordinator confirms scope and price by phone before the
-                  crew is dispatched.
+                  residential work. We confirm your booking by email, then brief the crew.
                 </p>
                 <dl className="mt-8 space-y-3 text-sm">
                   <Fact term="Booking" detail="Online, three steps" />
                   <Fact term="Lead time" detail="Next day on most services" />
-                  <Fact term="Confirmation" detail="By phone, before dispatch" />
+                  <Fact term="Confirmation" detail="By email, before dispatch" />
                 </dl>
                 {/* mt-auto pins both CTAs to the same baseline regardless of
                     how much copy sits above them. */}

@@ -135,8 +135,8 @@ function bookingRows(p: NotificationPayload) {
      * No estimated duration or crew size. The figures behind them are still
      * being reconciled — the pricing sheet and the duration calibration
      * disagree about the same job — and a customer who is emailed "about 3
-     * hours" will hold us to it. The coordinator gives timing on the call,
-     * where it can be qualified.
+     * hours" will hold us to it. The arrival window is the commitment we make;
+     * how long the visit runs is confirmed on the day.
      */
     ["Property", [p.propertySize, p.furnishing].filter(Boolean).join(" · ") || p.propertyType],
     ["Extras", addOnList(p.addOns)],
@@ -174,11 +174,11 @@ export function render(event: string, audience: string, p: NotificationPayload):
       subject: `New booking ${ref} — ${p.serviceName ?? "service"} on ${prettyDate(p.date)}`,
       html: shell(
         `New booking · ${esc(ref)}`,
-        "A new booking request came in through the website. Call the customer to confirm scope, access and price.",
+        "A new booking request came in through the website. Confirm it in the dashboard — that emails the customer their confirmation and releases the job to the crew.",
         r.html,
         "Open the dashboard to confirm or cancel this booking.",
       ),
-      text: `New booking ${ref}\n\nCall the customer to confirm scope, access and price.\n\n${r.text}${footer}`,
+      text: `New booking ${ref}\n\nConfirm it in the dashboard — that emails the customer their confirmation and releases the job to the crew.\n\n${r.text}${footer}`,
     };
   }
 

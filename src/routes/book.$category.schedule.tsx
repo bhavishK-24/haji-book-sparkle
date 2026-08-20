@@ -114,7 +114,7 @@ function SchedulePage() {
             <h2 className="display-sm">Preferred arrival time</h2>
             <p className="body-card mt-3 max-w-lg text-muted-foreground">
               Choose when you'd like the crew to arrive. How long the visit takes depends on the
-              service and your property — the coordinator confirms that when they call.
+              service and your property — we confirm that in your booking confirmation.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-2">

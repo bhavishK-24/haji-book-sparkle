@@ -21,7 +21,7 @@ export const Route = createFileRoute("/book/")({
       {
         name: "description",
         content:
-          "Choose what you need — home cleaning, single rooms, sofas and carpets, curtains, pest control, windows, marble or water tanks — and pick a date. Every booking is confirmed by phone.",
+          "Choose what you need — home cleaning, single rooms, sofas and carpets, curtains, pest control, windows, marble or water tanks — and pick a date. Every booking is confirmed by email.",
       },
       { property: "og:type", content: "website" },
     ],
@@ -51,7 +51,7 @@ function BookIndex() {
               <h1 className="display-xl mt-5">What do you need done?</h1>
               <p className="mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-primary-foreground/75">
                 Pick a category to see the options and choose a date. Every booking is confirmed by
-                phone before we dispatch a crew.
+                email before we dispatch a crew.
               </p>
               <a
                 href={`tel:${tel}`}

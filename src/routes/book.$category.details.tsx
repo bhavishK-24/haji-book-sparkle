@@ -161,8 +161,7 @@ function DetailsPage() {
             </div>
             <h1 className="display-lg mt-7">Request received</h1>
             <p className="lede mt-4">
-              A coordinator will call you within {CONFIRMATION_WINDOW} to confirm scope, timing and
-              price.
+              We will confirm your booking within {CONFIRMATION_WINDOW} and email you the details.
             </p>
           </div>
 
@@ -220,7 +219,7 @@ function DetailsPage() {
               label={selectedAddOns.length > 0 ? "Package" : "Service"}
               note={
                 selectedAddOns.length > 0
-                  ? "Extras are priced separately and confirmed on the call, so this covers the package only."
+                  ? "Extras are priced separately and confirmed with your booking, so this covers the package only."
                   : null
               }
             />
@@ -280,8 +279,8 @@ function DetailsPage() {
               <p className="eyebrow">Step 3</p>
               <h1 className="display-lg mt-4">Where should we come?</h1>
               <p className="lede mt-5">
-                Last step. We confirm every booking by phone before dispatching a crew — no payment
-                is taken online.
+                Last step. We confirm every booking and email you the details before a crew is
+                dispatched — no payment is taken online.
               </p>
             </Reveal>
 
@@ -474,7 +473,8 @@ function DetailsPage() {
 
                 <p className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
                   <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-                  We'll call to confirm scope and price. No payment is taken online.
+                  Your confirmation, with the price and arrival window, is emailed to you. No
+                  payment is taken online.
                 </p>
               </form>
             </Reveal>
@@ -523,7 +523,8 @@ function DetailsPage() {
                 ) : null}
               </dl>
               <p className="mt-6 border-t border-border pt-5 text-xs leading-relaxed text-muted-foreground">
-                Duration is confirmed on the call — it depends on the service and your property.
+                Duration is confirmed with your booking — it depends on the service and your
+                property.
               </p>
             </div>
           </Reveal>

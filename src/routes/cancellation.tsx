@@ -78,7 +78,7 @@ function CancellationPage() {
         <p>
           Please make sure someone is there, or that keys, access codes and building permissions are
           arranged before the day. If your building requires a work permit or security clearance,
-          tell us when we call to confirm.
+          tell us in the booking notes, or reply to your confirmation email.
         </p>
       </Clause>
 

@@ -181,8 +181,8 @@ export const PROPERTY_TYPES = [
  * These are START times, not fixed appointment windows. Services in the
  * catalogue range from a single-room clean to a six-bedroom intense deep
  * clean, so a uniform two-hour slot would be wrong for almost all of them.
- * The customer picks when they would like the crew to arrive; the coordinator
- * confirms how long the visit will take when they call.
+ * The customer picks when they would like the crew to arrive; the duration is
+ * confirmed in the booking confirmation we email out.
  */
 export const ARRIVAL_TIMES = [
   "08:00",
