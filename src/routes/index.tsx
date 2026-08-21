@@ -156,9 +156,9 @@ function Home() {
           <div className="container-page relative grid items-center gap-14 pb-20 pt-28 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20 lg:pb-28 lg:pt-36">
             <Reveal>
               <h1 className="display-2xl max-w-[13ch]">
-                Exceptional cleaning.
-                <span className="block text-primary-foreground/55">Professional standards.</span>
-                Every time.
+                20+ Years.
+                <span className="block text-primary-foreground/55">Thousands of spaces.</span>
+                No compromises.
               </h1>
 
               <p className="mt-7 max-w-xl text-[1.0625rem] leading-relaxed text-primary-foreground/75">
