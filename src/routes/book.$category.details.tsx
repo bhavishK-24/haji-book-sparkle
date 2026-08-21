@@ -30,7 +30,14 @@ import {
   type AddOnContext,
 } from "@/data/addon-selection";
 import { decodeItems, itemLines, itemsSummary } from "@/data/item-selection";
-import { bookableInCategory } from "@/data/booking-categories";
+import { bookableInCategory, servicesInCategory } from "@/data/booking-categories";
+import {
+  basketPrice as priceServiceBasket,
+  basketSummary as summariseServiceBasket,
+  pricedLines as serviceBasketPricedLines,
+  quotedBasketLines,
+  decodeBasket,
+} from "@/data/service-basket";
 import { track } from "@/lib/analytics";
 import { createBooking } from "@/lib/bookings.functions";
 import { COMPANY, EMIRATES, PROPERTY_TYPES } from "@/lib/company";
@@ -53,6 +60,8 @@ export const Route = createFileRoute("/book/$category/details")({
     variant: z.string().catch(""),
     /** Multi-item basket for per-piece services. See data/item-selection.ts. */
     items: z.string().catch(""),
+    /** Several services in one visit. See data/service-basket.ts. */
+    basket: z.string().catch(""),
   }),
   head: () => ({ meta: [{ title: "Your details | Haji Ahli" }] }),
   component: DetailsPage,
@@ -99,6 +108,7 @@ function DetailsPage() {
     room,
     variant,
     items: itemsRaw,
+    basket: basketRaw,
   } = Route.useSearch();
   const submit = useServerFn(createBooking);
   const [done, setDone] = useState(false);
@@ -106,6 +116,20 @@ function DetailsPage() {
 
   const bookable = bookableInCategory(category);
   const service = (serviceId ? getService(serviceId) : undefined) ?? bookable[0];
+
+  /*
+   * A visit covering several services, decoded against this category rather
+   * than trusted. Where it has anything in it, the basket — not the single
+   * service — is what the customer is buying, so it takes over the total and
+   * the itemised lines below.
+   */
+  const categoryServices = servicesInCategory(category);
+  const serviceBasket = decodeBasket(basketRaw, categoryServices);
+  const serviceBasketLines = serviceBasketPricedLines(serviceBasket, categoryServices);
+  const serviceBasketPrice = priceServiceBasket(serviceBasket, categoryServices);
+  const serviceBasketSummary = summariseServiceBasket(serviceBasket, categoryServices);
+  const serviceBasketQuoted = quotedBasketLines(serviceBasket);
+
   /*
    * Extras, decoded from the URL and re-priced here rather than trusted. Each
    * carries the variant and quantity chosen on the extras step — those were
@@ -123,13 +147,15 @@ function DetailsPage() {
   const extrasSummary = addOnsSummary(offeredAddOns, addOnSelection, addOnCtx);
   const hasExtras = offeredAddOns.length > 0;
 
-  /* Only extras we genuinely cannot price still need a caveat under the total. */
+  /* Only what we genuinely cannot price still needs a caveat under the total. */
   const extrasNote =
-    extrasOnQuote.length > 0
-      ? `${extrasOnQuote.map((a) => a.name).join(" and ")} ${
-          extrasOnQuote.length > 1 ? "are" : "is"
-        } quoted separately and is not included above.`
-      : null;
+    serviceBasketQuoted.length > 0
+      ? "The rooms priced from a video are confirmed separately and are not included above."
+      : extrasOnQuote.length > 0
+        ? `${extrasOnQuote.map((a) => a.name).join(" and ")} ${
+            extrasOnQuote.length > 1 ? "are" : "is"
+          } quoted separately and is not included above.`
+        : null;
 
   /*
    * Kitchen and Bathroom are re-priced here from the answers in the URL rather
@@ -189,9 +215,16 @@ function DetailsPage() {
    * not going to be charged.
    */
   const price =
-    basePrice === null
-      ? null
-      : withExtras(basePrice, extrasSubtotal, service?.id ?? null, roomOutcome?.kind === "priced");
+    serviceBasketPrice !== null
+      ? serviceBasketPrice
+      : basePrice === null
+        ? null
+        : withExtras(
+            basePrice,
+            extrasSubtotal,
+            service?.id ?? null,
+            roomOutcome?.kind === "priced",
+          );
 
   /*
    * One line per thing being paid for. Where extras are present the base has
@@ -199,23 +232,25 @@ function DetailsPage() {
    * silently swallows the package they attach to.
    */
   const summaryLines =
-    extrasLines.length === 0
-      ? basketLines
-      : [
-          ...(basketLines.length > 0
-            ? basketLines
-            : basePrice
-              ? [
-                  {
-                    label: service?.name ?? "Service",
-                    quantity: 1,
-                    unitPrice: basePrice.exclusive,
-                    lineTotal: basePrice.exclusive,
-                  },
-                ]
-              : []),
-          ...extrasLines,
-        ];
+    serviceBasketLines.length > 0
+      ? serviceBasketLines
+      : extrasLines.length === 0
+        ? basketLines
+        : [
+            ...(basketLines.length > 0
+              ? basketLines
+              : basePrice
+                ? [
+                    {
+                      label: service?.name ?? "Service",
+                      quantity: 1,
+                      unitPrice: basePrice.exclusive,
+                      lineTotal: basePrice.exclusive,
+                    },
+                  ]
+                : []),
+            ...extrasLines,
+          ];
 
   const mutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) => submit({ data: payload as never }),
@@ -421,6 +456,8 @@ function DetailsPage() {
                      */
                     notes: [
                       extrasSummary ? `Extras requested: ${extrasSummary}.` : "",
+                      /* Every service in the visit, so the crew loads once. */
+                      serviceBasketSummary ? `Visit covers: ${serviceBasketSummary}.` : "",
                       /*
                        * The room answers matter as much as the price: the crew
                        * needs to know it is a neglected standard kitchen with an

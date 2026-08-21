@@ -49,6 +49,16 @@ export const WHATSAPP_MESSAGES = {
     `Hello ${COMPANY.shortName}, I'd like a price for ${serviceName}. I'm sending a short video of the space now.`,
 
   /**
+   * The same, for a visit covering more than one room.
+   *
+   * `summary` is the basket in prose — "1 × Kitchen Intense Deep Cleaning, 2 ×
+   * Bathroom Intense Deep Cleaning" — so the coordinator prices one visit
+   * rather than reconstructing it across several messages.
+   */
+  videoQuoteBasket: (summary: string) =>
+    `Hello ${COMPANY.shortName}, I'd like a price for one visit covering: ${summary}. I'm sending a short video of each now.`,
+
+  /**
    * Sent after a booking is submitted, so a customer who prefers WhatsApp can
    * continue the conversation with the reference already attached.
    */

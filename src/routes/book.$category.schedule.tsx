@@ -24,6 +24,8 @@ export const Route = createFileRoute("/book/$category/schedule")({
     room: z.string().catch(""),
     /** Multi-item basket for per-piece services. See data/item-selection.ts. */
     items: z.string().catch(""),
+    /** Several services in one visit. See data/service-basket.ts. */
+    basket: z.string().catch(""),
   }),
   head: () => ({ meta: [{ title: "Choose a date | Haji Ahli" }] }),
   component: SchedulePage,
@@ -39,7 +41,16 @@ function startOfToday() {
 
 function SchedulePage() {
   const { category } = categoryRoute.useLoaderData();
-  const { service: serviceId, addons, size, furnishing, variant, room, items } = Route.useSearch();
+  const {
+    service: serviceId,
+    addons,
+    size,
+    furnishing,
+    variant,
+    room,
+    items,
+    basket,
+  } = Route.useSearch();
   const navigate = useNavigate();
 
   const bookable = bookableInCategory(category);
@@ -202,6 +213,7 @@ function SchedulePage() {
                     variant,
                     room,
                     items,
+                    basket,
                     date: date ? format(date, "yyyy-MM-dd") : "",
                     time: arrival,
                   },

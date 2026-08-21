@@ -33,14 +33,18 @@ export function canonicalUrl(pathname: string): string {
 /**
  * Opening hours, split out of the human-readable string in `company.ts`.
  *
- * `COMPANY.hours` reads "Every day, 8:00 – 19:00" — true, but not machine
- * readable. These are the same figures in the shape schema.org expects, and
- * they match the arrival slots the booking flow actually offers.
+ * `COMPANY.hours` reads "Open 24/7" — true, but not machine readable. These
+ * are the same hours in the shape schema.org expects, and they match the
+ * arrival slots the booking flow actually offers.
+ *
+ * 00:00 to 23:59 across all seven days is how schema.org expresses a business
+ * that never closes. A 24:00 close, or opens and closes being equal, is read
+ * by Google as a zero-length window — the opposite of what is meant.
  */
 const OPENING_HOURS = {
   days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-  opens: "08:00",
-  closes: "19:00",
+  opens: "00:00",
+  closes: "23:59",
 };
 
 /**

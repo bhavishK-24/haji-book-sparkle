@@ -32,6 +32,8 @@ export const Route = createFileRoute("/book/$category/extras")({
     room: z.string().catch(""),
     /** Multi-item basket for per-piece services. See data/item-selection.ts. */
     items: z.string().catch(""),
+    /** Several services in one visit. See data/service-basket.ts. */
+    basket: z.string().catch(""),
   }),
   head: () => ({ meta: [{ title: "Add extras | Haji Ahli" }] }),
   component: ExtrasPage,
@@ -48,7 +50,7 @@ const VARIANT_LABEL: Record<string, string> = {
 
 function ExtrasPage() {
   const { category } = categoryRoute.useLoaderData();
-  const { service: serviceId, size, furnishing, variant, room, items } = Route.useSearch();
+  const { service: serviceId, size, furnishing, variant, room, items, basket } = Route.useSearch();
   const navigate = useNavigate();
 
   const bookable = bookableInCategory(category);
@@ -119,6 +121,7 @@ function ExtrasPage() {
         variant,
         room,
         items,
+        basket,
       },
     });
 

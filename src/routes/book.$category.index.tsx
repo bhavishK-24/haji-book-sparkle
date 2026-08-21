@@ -16,6 +16,8 @@ import {
 import { Reveal } from "@/components/reveal";
 import { ServicePhoto } from "@/components/service-photo";
 import { ItemPicker } from "@/components/item-picker";
+import { BasketPricePanel } from "@/components/basket-price-panel";
+import { ServiceBasketPicker } from "@/components/service-basket-picker";
 import { WhatsAppQuotePanel } from "@/components/whatsapp-quote-panel";
 import { Button } from "@/components/ui/button";
 import { addOnsForService, isOnlineBookable, packageAdds, PACKAGE_SCOPE_COLUMNS } from "@/data";
@@ -40,6 +42,14 @@ import {
   isEnquiryCategory,
   servicesInCategory,
 } from "@/data/booking-categories";
+import {
+  basketableServices,
+  basketCount,
+  basketNeedsQuote,
+  encodeBasket,
+  supportsMultiService,
+  type ServiceBasket,
+} from "@/data/service-basket";
 import {
   applyMinimumBookingValue,
   formatAed,
@@ -159,6 +169,16 @@ function ChooseService() {
   const [items, setItems] = useState<ItemSelection>({});
 
   /*
+   * Categories whose services go together take a basket across all of them —
+   * a kitchen and a bathroom, or a sofa and a mattress, in one visit rather
+   * than in two bookings for the same address. Which categories qualify is
+   * derived from the catalogue; see `supportsMultiService`.
+   */
+  const multiService = supportsMultiService(category);
+  const basketServices = multiService ? basketableServices(category) : [];
+  const [basket, setBasket] = useState<ServiceBasket>([]);
+
+  /*
    * What each tier turns on that the tier below does not. Only meaningful in a
    * tiered category — elsewhere the full scope is what the customer needs.
    */
@@ -246,6 +266,31 @@ function ChooseService() {
     ...(multiItem && chosenCount > 0 ? { items: encodeItems(items) } : {}),
     ...(isConfigured(serviceId) ? { room: encodeRoomSelection(serviceId, kitchen, bathroom) } : {}),
   });
+
+  /*
+   * Where a full basket goes next. Extras are offered only if something in the
+   * basket actually has any — none of the basketable services do today, but
+   * deriving it means a service that gains add-ons is not silently skipped.
+   */
+  const basketHasAddOns = basketServices.some(
+    (s) => basket.some((l) => l.serviceId === s.id) && addOnsForService(s).length > 0,
+  );
+  const basketBookHref =
+    multiService && basketCount(basket) > 0 && !basketNeedsQuote(basket)
+      ? {
+          to: basketHasAddOns ? "/book/$category/extras" : "/book/$category/schedule",
+          params: { category: category.slug },
+          search: {
+            /*
+             * A primary service id still travels, because every downstream
+             * step and the booking record expect one. The basket is what
+             * actually gets priced.
+             */
+            service: basket[0]?.serviceId ?? "",
+            basket: encodeBasket(basket),
+          },
+        }
+      : null;
 
   /* Services with add-ons collect them before the calendar. */
   const bookHref =
@@ -338,9 +383,20 @@ function ChooseService() {
         <Reveal className="max-w-2xl">
           <p className="eyebrow">{sizedByProperty ? "Then" : "Step 1"}</p>
           <h2 className="display-lg mt-4">
-            {services.length > 1 ? "Choose your service" : "What's included"}
+            {multiService
+              ? "What do you need done?"
+              : services.length > 1
+                ? "Choose your service"
+                : "What's included"}
           </h2>
-          {category.chooseHint ? <p className="lede mt-5">{category.chooseHint}</p> : null}
+          {multiService ? (
+            <p className="lede mt-5">
+              Add as many as you need — everything you choose is done in the same visit, on one
+              booking.
+            </p>
+          ) : category.chooseHint ? (
+            <p className="lede mt-5">{category.chooseHint}</p>
+          ) : null}
         </Reveal>
 
         {/*
@@ -350,193 +406,210 @@ function ChooseService() {
         */}
         <div className="mt-12 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_21rem] lg:gap-14">
           <div>
-            {services.length > 1 ? (
+            {multiService ? (
               <Reveal>
-                <ul className="grid gap-3 sm:grid-cols-2">
-                  {services.map((s) => (
-                    <li key={s.id}>
-                      <button
-                        type="button"
-                        aria-pressed={selectedId === s.id}
-                        onClick={() => {
-                          setSelectedId(s.id);
-                          /* A sofa size means nothing once you switch to carpets. */
-                          setVariant(null);
-                        }}
-                        className={cn(
-                          "flex h-full w-full flex-col rounded-2xl border p-5 text-left transition-all duration-[var(--dur-base)]",
-                          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]",
-                          selectedId === s.id
-                            ? "border-primary bg-primary/[0.05] shadow-soft"
-                            : "border-border hover:border-primary/40 hover:bg-secondary/60",
-                        )}
-                      >
-                        <span className="flex items-start gap-2.5">
-                          <span
-                            aria-hidden
+                <ServiceBasketPicker
+                  services={basketServices}
+                  basket={basket}
+                  onChange={setBasket}
+                />
+                <MaterialsNote className="mt-10" />
+              </Reveal>
+            ) : (
+              <>
+                {services.length > 1 ? (
+                  <Reveal>
+                    <ul className="grid gap-3 sm:grid-cols-2">
+                      {services.map((s) => (
+                        <li key={s.id}>
+                          <button
+                            type="button"
+                            aria-pressed={selectedId === s.id}
+                            onClick={() => {
+                              setSelectedId(s.id);
+                              /* A sofa size means nothing once you switch to carpets. */
+                              setVariant(null);
+                            }}
                             className={cn(
-                              "mt-1 grid size-[1.125rem] shrink-0 place-items-center rounded-full border transition-colors duration-[var(--dur-base)]",
+                              "flex h-full w-full flex-col rounded-2xl border p-5 text-left transition-all duration-[var(--dur-base)]",
+                              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus-ring)]",
                               selectedId === s.id
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-foreground/25",
+                                ? "border-primary bg-primary/[0.05] shadow-soft"
+                                : "border-border hover:border-primary/40 hover:bg-secondary/60",
                             )}
                           >
-                            {selectedId === s.id ? (
-                              <Check className="size-3" strokeWidth={3.5} />
-                            ) : null}
-                          </span>
-                          <span className="font-semibold leading-snug">{s.name}</span>
-                        </span>
+                            <span className="flex items-start gap-2.5">
+                              <span
+                                aria-hidden
+                                className={cn(
+                                  "mt-1 grid size-[1.125rem] shrink-0 place-items-center rounded-full border transition-colors duration-[var(--dur-base)]",
+                                  selectedId === s.id
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : "border-foreground/25",
+                                )}
+                              >
+                                {selectedId === s.id ? (
+                                  <Check className="size-3" strokeWidth={3.5} />
+                                ) : null}
+                              </span>
+                              <span className="font-semibold leading-snug">{s.name}</span>
+                            </span>
 
-                        {/*
+                            {/*
                           The price sits directly under the name, not at the
                           foot of the card: someone comparing three services
                           reads name then cost, and burying the figure below the
                           description made them scan past it to find it.
                         */}
-                        <span className="mt-1.5 pl-[1.625rem] text-sm font-bold text-foreground">
-                          {(() => {
-                            const from = priceFrom(s.id);
-                            if (!from) return "Price on quote";
-                            return `From ${formatAed(from.exclusive)} + VAT`;
-                          })()}
-                        </span>
+                            <span className="mt-1.5 pl-[1.625rem] text-sm font-bold text-foreground">
+                              {(() => {
+                                const from = priceFrom(s.id);
+                                if (!from) return "Price on quote";
+                                return `From ${formatAed(from.exclusive)} + VAT`;
+                              })()}
+                            </span>
 
-                        {s.shortDescription ? (
-                          <span className="mt-2.5 pl-[1.625rem] text-[0.8125rem] leading-relaxed text-muted-foreground">
-                            {s.shortDescription}
-                          </span>
-                        ) : null}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </Reveal>
-            ) : null}
-
-            {selected ? (
-              <div className={services.length > 1 ? "mt-12 space-y-10" : "space-y-10"}>
-                {services.length === 1 && selected.shortDescription ? (
-                  <p className="lede max-w-2xl">{selected.shortDescription}</p>
+                            {s.shortDescription ? (
+                              <span className="mt-2.5 pl-[1.625rem] text-[0.8125rem] leading-relaxed text-muted-foreground">
+                                {s.shortDescription}
+                              </span>
+                            ) : null}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </Reveal>
                 ) : null}
 
-                {/* Unit-priced services need the item picked before they price. */}
-                {/*
+                {selected ? (
+                  <div className={services.length > 1 ? "mt-12 space-y-10" : "space-y-10"}>
+                    {services.length === 1 && selected.shortDescription ? (
+                      <p className="lede max-w-2xl">{selected.shortDescription}</p>
+                    ) : null}
+
+                    {/* Unit-priced services need the item picked before they price. */}
+                    {/*
                   Sold by the piece — sofas, carpets, mattresses, tanks — so
                   several sizes can go into one visit. Bands like window
                   cleaning stay a single choice, where picking two would mean
                   nothing.
                 */}
-                {!isConfigured(selected.id) && sellsByUnit && multiItem ? (
-                  <div>
-                    <h3 className="text-[1.0625rem] font-semibold leading-snug">
-                      What do you need cleaned?
-                    </h3>
-                    <p className="mt-1.5 text-sm text-muted-foreground">
-                      Add as many as you like — they are all done in the same visit.
-                    </p>
-                    <div className="mt-4 max-w-md">
-                      <ItemPicker
-                        serviceId={selected.id}
-                        items={items}
-                        onChange={setItems}
-                        unitNoun={unitNoun}
-                      />
-                    </div>
-                  </div>
-                ) : !isConfigured(selected.id) && sellsByUnit ? (
-                  <div>
-                    <h3 className="text-[1.0625rem] font-semibold leading-snug">
-                      Which one do you need cleaned?
-                    </h3>
-                    <div className="mt-4 max-w-md">
-                      <UnitPriceTable
-                        serviceId={selected.id}
-                        selected={variant}
-                        onSelect={setVariant}
-                      />
-                    </div>
-                  </div>
-                ) : null}
+                    {!isConfigured(selected.id) && sellsByUnit && multiItem ? (
+                      <div>
+                        <h3 className="text-[1.0625rem] font-semibold leading-snug">
+                          What do you need cleaned?
+                        </h3>
+                        <p className="mt-1.5 text-sm text-muted-foreground">
+                          Add as many as you like — they are all done in the same visit.
+                        </p>
+                        <div className="mt-4 max-w-md">
+                          <ItemPicker
+                            serviceId={selected.id}
+                            items={items}
+                            onChange={setItems}
+                            unitNoun={unitNoun}
+                          />
+                        </div>
+                      </div>
+                    ) : !isConfigured(selected.id) && sellsByUnit ? (
+                      <div>
+                        <h3 className="text-[1.0625rem] font-semibold leading-snug">
+                          Which one do you need cleaned?
+                        </h3>
+                        <div className="mt-4 max-w-md">
+                          <UnitPriceTable
+                            serviceId={selected.id}
+                            selected={variant}
+                            onSelect={setVariant}
+                          />
+                        </div>
+                      </div>
+                    ) : null}
 
-                {/* Every property type, so nobody has to guess before choosing. */}
-                {!isConfigured(selected.id) && sizedByProperty ? (
-                  <details className="group">
-                    <summary className="link-underline inline-flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-primary">
-                      See the price for every property type
-                    </summary>
-                    <div className="mt-5 max-w-xl">
-                      <PropertyPriceTable
-                        serviceId={selected.id}
-                        selected={size}
-                        furnishing={furnishing}
-                        onSelect={(type, f) => {
-                          setSize(type as PropertySize);
-                          if (f) setFurnishing(f as Furnishing);
-                        }}
-                      />
-                    </div>
-                  </details>
-                ) : null}
+                    {/* Every property type, so nobody has to guess before choosing. */}
+                    {!isConfigured(selected.id) && sizedByProperty ? (
+                      <details className="group">
+                        <summary className="link-underline inline-flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-primary">
+                          See the price for every property type
+                        </summary>
+                        <div className="mt-5 max-w-xl">
+                          <PropertyPriceTable
+                            serviceId={selected.id}
+                            selected={size}
+                            furnishing={furnishing}
+                            onSelect={(type, f) => {
+                              setSize(type as PropertySize);
+                              if (f) setFurnishing(f as Furnishing);
+                            }}
+                          />
+                        </div>
+                      </details>
+                    ) : null}
 
-                {/*
+                    {/*
                   For the tiered packages, show only what this one turns on that
                   the tier below does not. The raw scope prose restates the whole
                   of the tier below — accurate, but no help in choosing.
                 */}
-                {/*
+                    {/*
                   The upgrade summary, only where the services form a ladder
                   and this is not the entry tier.
                 */}
-                {selectedAdds && selectedAdds.length > 0 ? (
-                  <div className="rounded-2xl border border-border bg-card p-6 sm:p-7">
-                    <h4 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                      {`Everything in ${services[selectedIndex - 1]!.name.replace(
-                        "Residential ",
-                        "",
-                      ).replace(" Cleaning", "")}, plus`}
-                    </h4>
-                    <ul className="mt-4 grid gap-2.5 sm:grid-cols-2">
-                      {selectedAdds.map((item) => (
-                        <li key={item} className="flex gap-2.5 text-[0.9375rem] leading-snug">
-                          <Check
-                            className="mt-0.5 size-4 shrink-0 text-primary"
-                            strokeWidth={2.5}
-                            aria-hidden
-                          />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
+                    {selectedAdds && selectedAdds.length > 0 ? (
+                      <div className="rounded-2xl border border-border bg-card p-6 sm:p-7">
+                        <h4 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                          {`Everything in ${services[selectedIndex - 1]!.name.replace(
+                            "Residential ",
+                            "",
+                          ).replace(" Cleaning", "")}, plus`}
+                        </h4>
+                        <ul className="mt-4 grid gap-2.5 sm:grid-cols-2">
+                          {selectedAdds.map((item) => (
+                            <li key={item} className="flex gap-2.5 text-[0.9375rem] leading-snug">
+                              <Check
+                                className="mt-0.5 size-4 shrink-0 text-primary"
+                                strokeWidth={2.5}
+                                aria-hidden
+                              />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
 
-                {/*
+                    {/*
                   The full scope, always. Whatever else is on the page, someone
                   deciding wants the plain list of what they are buying.
                 */}
-                <div className="grid gap-x-12 gap-y-8 md:grid-cols-2">
-                  <ScopeColumn heading="Included" items={selected.included} tone="included" />
-                  <ScopeColumn heading="Not included" items={selected.excluded} tone="excluded" />
-                </div>
-
-                {/* Stated once per service, because customers always ask. */}
-                <MaterialsNote />
-
-                {/* Pest treatments carry a warranty; nothing else does. */}
-                {selected.category === "Pest Control & Hygiene" ? (
-                  <div className="flex gap-3 rounded-xl border border-primary/25 bg-primary/[0.04] p-4">
-                    <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-                    <div>
-                      <p className="text-sm font-semibold">{PEST_WARRANTY.heading}</p>
-                      <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted-foreground">
-                        {PEST_WARRANTY.body}
-                      </p>
+                    <div className="grid gap-x-12 gap-y-8 md:grid-cols-2">
+                      <ScopeColumn heading="Included" items={selected.included} tone="included" />
+                      <ScopeColumn
+                        heading="Not included"
+                        items={selected.excluded}
+                        tone="excluded"
+                      />
                     </div>
+
+                    {/* Stated once per service, because customers always ask. */}
+                    <MaterialsNote />
+
+                    {/* Pest treatments carry a warranty; nothing else does. */}
+                    {selected.category === "Pest Control & Hygiene" ? (
+                      <div className="flex gap-3 rounded-xl border border-primary/25 bg-primary/[0.04] p-4">
+                        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                        <div>
+                          <p className="text-sm font-semibold">{PEST_WARRANTY.heading}</p>
+                          <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted-foreground">
+                            {PEST_WARRANTY.body}
+                          </p>
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
-              </div>
-            ) : null}
+              </>
+            )}
           </div>
 
           <aside className="lg:sticky lg:top-28">
@@ -544,7 +617,13 @@ function ChooseService() {
               Kitchen and bathroom are quoted from a video on WhatsApp, so they
               get the video panel instead of a price-and-book panel.
             */}
-            {selected && isVideoQuoted(selected.id) ? (
+            {multiService ? (
+              <BasketPricePanel
+                services={basketServices}
+                basket={basket}
+                bookHref={basketBookHref}
+              />
+            ) : selected && isVideoQuoted(selected.id) ? (
               <WhatsAppQuotePanel service={selected} />
             ) : (
               <BookingPricePanel

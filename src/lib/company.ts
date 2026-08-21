@@ -32,10 +32,11 @@ export const COMPANY = {
   /**
    * Stated to match the arrival slots we actually offer.
    *
-   * ARRIVAL_TIMES ends at 19:00, so advertising 20:00 promised an hour nobody
-   * could book. The last slot a customer can pick is 19:00.
+   * The business runs around the clock, so ARRIVAL_TIMES covers all
+   * twenty-four hours and this line has to say so. The rule the two are held
+   * to is the same as before: never advertise an hour nobody can book.
    */
-  hours: "Every day, 8:00 – 19:00",
+  hours: "Open 24/7",
 } as const;
 
 /**
@@ -185,6 +186,14 @@ export const PROPERTY_TYPES = [
  * confirmed in the booking confirmation we email out.
  */
 export const ARRIVAL_TIMES = [
+  "00:00",
+  "01:00",
+  "02:00",
+  "03:00",
+  "04:00",
+  "05:00",
+  "06:00",
+  "07:00",
   "08:00",
   "09:00",
   "10:00",
@@ -197,6 +206,10 @@ export const ARRIVAL_TIMES = [
   "17:00",
   "18:00",
   "19:00",
+  "20:00",
+  "21:00",
+  "22:00",
+  "23:00",
 ] as const;
 
 /**
@@ -223,11 +236,19 @@ export const PEST_WARRANTY = {
   body: "Every pest treatment is covered for three months. If the problem returns within that time we come back and re-treat at no charge.",
 } as const;
 
-/** Coarser preference for customers who are flexible. */
+/**
+ * Coarser preference for customers who are flexible.
+ *
+ * Four bands rather than three, and they tile the whole day without a gap:
+ * operating around the clock means someone booking an overnight visit needs a
+ * band to pick, and the old evening band stopped at 20:00 while the day now
+ * runs to midnight.
+ */
 export const ARRIVAL_PREFERENCES = [
-  { value: "morning", label: "Morning", detail: "08:00 – 12:00" },
-  { value: "afternoon", label: "Afternoon", detail: "12:00 – 16:00" },
-  { value: "evening", label: "Evening", detail: "16:00 – 20:00" },
+  { value: "morning", label: "Morning", detail: "06:00 – 12:00" },
+  { value: "afternoon", label: "Afternoon", detail: "12:00 – 18:00" },
+  { value: "evening", label: "Evening", detail: "18:00 – 00:00" },
+  { value: "overnight", label: "Overnight", detail: "00:00 – 06:00" },
 ] as const;
 
 /**
