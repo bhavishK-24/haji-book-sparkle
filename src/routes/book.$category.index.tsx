@@ -652,7 +652,14 @@ function ChooseService() {
           </Reveal>
         ) : null}
 
-        {enquiryOnly ? (
+        {/*
+          Survey panel, for categories where every service is scoped on site.
+          Not for a basket category: single rooms became enquiry-only when
+          balcony joined the video quote, and this panel would have told a
+          customer we survey first when what we actually ask for is a video.
+          The basket panel already carries the right call to action.
+        */}
+        {enquiryOnly && !multiService ? (
           <Reveal className="mt-16 border-t border-border pt-10">
             <h3 className="display-md">Book a site visit</h3>
             <p className="lede mt-4 max-w-xl">

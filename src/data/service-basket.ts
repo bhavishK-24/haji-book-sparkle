@@ -45,9 +45,9 @@ export const MAX_LINES = 20;
  * Whether a service can sit in a basket alongside others.
  *
  * Two shapes qualify, and both describe a countable thing rather than a whole
- * job. Services sold by the piece — sofas, carpets, mattresses, balconies —
- * and services quoted per room from a video, where the count is how many
- * kitchens or bathrooms.
+ * job. Services sold by the piece — sofas, carpets, mattresses — and services
+ * quoted per room from a video, where the count is how many kitchens,
+ * bathrooms or balconies.
  *
  * Band-priced services are excluded on purpose. Window cleaning is sold as
  * "1–3 windows" and marble as a job; two of those bands together means
@@ -83,11 +83,16 @@ export const basketableServices = (category: BookingCategory): Service[] =>
  * The sizes a basketable service is sold in.
  *
  * Empty for a per-room video quote: there is nothing to choose, only a count.
+ * The test is on the video quote itself, not on whether the workbook happens
+ * to list rows — balcony carries a single priced row, and offering it as a
+ * one-item size list asked the customer to choose between one option.
  */
 export const variantsFor = (serviceId: string): string[] =>
-  unitRowsFor(serviceId)
-    .filter((r) => r.priceExVat !== null)
-    .map((r) => r.label);
+  isVideoQuoted(serviceId)
+    ? []
+    : unitRowsFor(serviceId)
+        .filter((r) => r.priceExVat !== null)
+        .map((r) => r.label);
 
 // ── URL encoding ────────────────────────────────────────────────────────────
 

@@ -1,4 +1,5 @@
 import { ChevronDown, Minus, Plus, Video } from "lucide-react";
+import { isVideoQuoted } from "@/data/configured/engine";
 import { useState } from "react";
 import { formatAed, priceFrom, resolveUnitPrice } from "@/data/pricing";
 import {
@@ -102,8 +103,7 @@ export function ServiceBasketPicker({
     <div className="grid gap-3">
       {services.map((service) => {
         const variants = variantsFor(service.id);
-        /* No sizes to choose means this one is quoted per room from a video. */
-        const quoted = variants.length === 0;
+        const quoted = isVideoQuoted(service.id);
         const open = openId === service.id;
 
         const lines = basket.filter((l) => l.serviceId === service.id);

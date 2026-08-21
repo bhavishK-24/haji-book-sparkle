@@ -41,17 +41,13 @@ export function BasketPricePanel({
 }) {
   const count = basketCount(basket);
 
-  if (count === 0) {
-    return (
-      <div className="rounded-2xl border border-dashed border-border p-6">
-        <p className="text-sm font-medium">Build your visit</p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Add everything you need doing — it is all done in the same visit, and your total appears
-          here.
-        </p>
-      </div>
-    );
-  }
+  /*
+   * Nothing at all until something is in the basket. An empty prompt sitting
+   * beside the list is a card that asks to be read and then says nothing —
+   * the picker on the left already explains what to do, and a second panel
+   * repeating it competes with the choice the customer is making.
+   */
+  if (count === 0) return null;
 
   const lines = pricedLines(basket, services);
   const quoted = quotedBasketLines(basket);

@@ -41,19 +41,26 @@ export const MIN_BOOKING_VALUE = 149;
  * it is the business's real price list and the coordinator quotes from it.
  * It is simply no longer asked of the customer.
  */
-export const VIDEO_QUOTE_SERVICE_IDS = ["SVC-104", "SVC-105"] as const;
+export const VIDEO_QUOTE_SERVICE_IDS = ["SVC-104", "SVC-105", "SVC-106"] as const;
 export const isVideoQuoted = (serviceId: string): boolean =>
   (VIDEO_QUOTE_SERVICE_IDS as readonly string[]).includes(serviceId);
 
 /**
- * Formerly "does this service use an on-site configurator".
+ * Services that carry a room configurator behind the video quote.
  *
- * Kept as an alias so nothing has to change if these services ever move back
- * to self-service pricing — the answer to "is this priced by room detail" is
- * still yes, it is just answered by a coordinator watching a video.
+ * NOT the same set as the one above, and it must not become an alias of it
+ * again. Kitchen and bathroom have band tables and formulas in `kitchen.ts`
+ * and `bathroom.ts` that the coordinator quotes from; balcony has neither, it
+ * simply has one workbook price and now takes a video like the other two.
+ *
+ * The two were the same list once, so `isConfigured` was written as an alias.
+ * Anything that reads it goes on to ask "kitchen or bathroom?" and answers
+ * bathroom for everything that is not kitchen — which would have priced a
+ * balcony as a bathroom the moment the lists diverged.
  */
-export const CONFIGURED_SERVICE_IDS = VIDEO_QUOTE_SERVICE_IDS;
-export const isConfigured = isVideoQuoted;
+export const CONFIGURED_SERVICE_IDS = ["SVC-104", "SVC-105"] as const;
+export const isConfigured = (serviceId: string): boolean =>
+  (CONFIGURED_SERVICE_IDS as readonly string[]).includes(serviceId);
 
 /** Wraps a VAT-exclusive total into the shape the UI renders. */
 function settle(
