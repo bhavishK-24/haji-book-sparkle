@@ -17,7 +17,8 @@ import { ServicePhoto } from "@/components/service-photo";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { BOOKING_CATEGORIES, getCategoryPhoto } from "@/data/booking-categories";
+import { BOOKING_CATEGORIES, categoryFromPrice, getCategoryPhoto } from "@/data/booking-categories";
+import { formatAed } from "@/data/pricing";
 import { ALL_PHOTOS as PHOTOS_ALL } from "@/data/media";
 import { CLIENT_WORDMARKS, COMPANY, CORPORATE_ACCOUNTS, STATS } from "@/lib/company";
 
@@ -335,6 +336,29 @@ function Home() {
                       <span className="block font-display text-base font-semibold tracking-tight">
                         {category.name}
                       </span>
+                      {/*
+                        An entry price under the name, in the same place and
+                        the same weight the category and service pages use.
+                        A card that shows only a name asks the customer to
+                        click to find out whether it is even in their range.
+                      */}
+                      {(() => {
+                        const from = categoryFromPrice(category);
+                        return (
+                          <span className="mt-0.5 block text-sm font-bold text-foreground">
+                            {from ? (
+                              <>
+                                From {formatAed(from.exclusive)}
+                                <span className="font-medium text-muted-foreground"> + VAT</span>
+                              </>
+                            ) : (
+                              <span className="font-semibold text-muted-foreground">
+                                Price on quote
+                              </span>
+                            )}
+                          </span>
+                        );
+                      })()}
                       <span className="mt-1 block text-sm leading-snug text-muted-foreground">
                         {category.tagline}
                       </span>

@@ -8,10 +8,12 @@ import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import {
   BOOKING_CATEGORIES,
+  categoryFromPrice,
   getCategoryPhoto,
   isEnquiryCategory,
   servicesInCategory,
 } from "@/data/booking-categories";
+import { formatAed } from "@/data/pricing";
 import { COMPANY } from "@/lib/company";
 
 export const Route = createFileRoute("/book/")({
@@ -110,7 +112,23 @@ function BookIndex() {
                         </div>
                       </div>
                     </div>
-                    <p className="body-card mt-2 text-muted-foreground">{category.tagline}</p>
+                    {/* Entry price under the name, as on the homepage cards. */}
+                    <p className="mt-2 text-sm font-bold text-foreground">
+                      {(() => {
+                        const from = categoryFromPrice(category);
+                        return from ? (
+                          <>
+                            From {formatAed(from.exclusive)}
+                            <span className="font-medium text-muted-foreground"> + VAT</span>
+                          </>
+                        ) : (
+                          <span className="font-semibold text-muted-foreground">
+                            Price on quote
+                          </span>
+                        );
+                      })()}
+                    </p>
+                    <p className="body-card mt-1.5 text-muted-foreground">{category.tagline}</p>
                     <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
                       {enquiry ? "Request a survey" : "Choose a date"}
                       <ArrowRight className="size-4 transition-transform duration-[var(--dur-base)] group-hover:translate-x-0.5" />

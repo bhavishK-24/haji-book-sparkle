@@ -48,7 +48,7 @@ export function WhatsAppButton({
       onClick={() => track("whatsapp_click", { surface: "floating" })}
       aria-label="Message us on WhatsApp"
       className={cn(
-        "group fixed bottom-5 right-5 z-40 inline-flex items-center gap-3 rounded-full",
+        "whatsapp-fab group fixed bottom-5 right-5 z-40 inline-flex items-center gap-3 rounded-full",
         "bg-[#25D366] py-3.5 pl-4 pr-4 text-white shadow-lift",
         "transition-[transform,opacity,padding] duration-[var(--dur-slow)] ease-out",
         "hover:pr-5 focus-visible:outline-2 focus-visible:outline-offset-2",

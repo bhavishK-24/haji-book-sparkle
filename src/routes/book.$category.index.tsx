@@ -1,7 +1,7 @@
 import { createFileRoute, getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowLeft, Check, Mail, Minus, PhoneCall, ShieldCheck } from "lucide-react";
 import { z } from "zod";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BookingPricePanel } from "@/components/booking-price-panel";
 import { BookingSteps } from "@/components/booking-steps";
 import { CategoryIcon } from "@/components/category-icon";
@@ -17,6 +17,7 @@ import { Reveal } from "@/components/reveal";
 import { ServicePhoto } from "@/components/service-photo";
 import { ItemPicker } from "@/components/item-picker";
 import { BasketPricePanel } from "@/components/basket-price-panel";
+import { MobileBookingBar } from "@/components/mobile-booking-bar";
 import { ServiceBasketPicker } from "@/components/service-basket-picker";
 import { WhatsAppQuotePanel } from "@/components/whatsapp-quote-panel";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ import {
   applyMinimumBookingValue,
   formatAed,
   priceFrom,
+  propertyFromPrice,
   propertyRowsFor,
   resolveItemsPrice,
   resolvePropertyPrice,
@@ -232,7 +234,17 @@ function ChooseService() {
         ? applyMinimumBookingValue(resolveUnitPrice(selected.id, variant), selected.id)
         : size && !needsProperty
           ? applyMinimumBookingValue(resolvePropertyPrice(selected.id, size, furnishing))
-          : priceFrom(selected.id);
+          : /*
+             * Property chosen, furnishing not yet. Whole-home packages price
+             * on two axes and the customer answers them one at a time; between
+             * the two answers this used to fall all the way back to the
+             * catalogue "from" figure, so someone who had just said they have
+             * a three-bedroom villa watched the price sit at the studio price
+             * and reasonably concluded it was broken. Now it steps to the
+             * cheapest figure for the property they named, and the exact one
+             * replaces it when they answer furnishing.
+             */
+            ((size ? propertyFromPrice(selected.id, size) : null) ?? priceFrom(selected.id));
 
   const selectedIsExact = Boolean(
     selected &&
@@ -240,6 +252,17 @@ function ChooseService() {
       (sellsByUnit && (multiItem ? chosenCount > 0 : Boolean(variant)))) &&
     selectedPrice,
   );
+
+  /*
+   * One line naming what the figure covers. A price with nothing attached to
+   * it is the thing customers distrust most in a booking flow, and the phone
+   * bar has no room for the panel's full heading.
+   */
+  const priceSummary = !selected
+    ? null
+    : [selected.name, size, size && furnishing ? furnishing : null, variant]
+        .filter(Boolean)
+        .join(" · ");
 
   const blockedReason = !selected
     ? null
@@ -252,6 +275,38 @@ function ChooseService() {
         : selectedOutcome?.kind === "needs-input"
           ? "Answer the questions to see your price"
           : null;
+
+  /*
+   * Bring the price into view the moment the choice is complete.
+   *
+   * Guarded three ways, because an unasked-for scroll is worse than no scroll
+   * at all. It fires once per transition into a complete selection, never
+   * while the customer is still changing their mind; it does nothing if the
+   * panel is already on screen, which on a laptop it always is because the
+   * sidebar is sticky; and it honours a reduced-motion preference by jumping
+   * rather than animating.
+   */
+  const pricePanelRef = useRef<HTMLDivElement | null>(null);
+  const announced = useRef(false);
+
+  useEffect(() => {
+    if (!selectedIsExact) {
+      announced.current = false;
+      return;
+    }
+    if (announced.current) return;
+    announced.current = true;
+
+    const el = pricePanelRef.current;
+    if (!el || typeof window === "undefined") return;
+
+    const box = el.getBoundingClientRect();
+    const alreadyVisible = box.top >= 0 && box.bottom <= window.innerHeight;
+    if (alreadyVisible) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+  }, [selectedIsExact]);
 
   /**
    * What the customer has chosen travels to the next step in the URL, so the
@@ -612,7 +667,7 @@ function ChooseService() {
             )}
           </div>
 
-          <aside className="lg:sticky lg:top-28">
+          <aside ref={pricePanelRef} className="lg:sticky lg:top-28">
             {/*
               Kitchen and bathroom are quoted from a video on WhatsApp, so they
               get the video panel instead of a price-and-book panel.
@@ -650,6 +705,21 @@ function ChooseService() {
               <PackageComparison columns={comparisonColumns} />
             </div>
           </Reveal>
+        ) : null}
+
+        {/*
+          The phone-only price and action bar. Below `lg` only: the sticky
+          sidebar already does this job on a laptop, and two price panels on
+          one screen would be two sources of truth.
+        */}
+        {!multiService ? (
+          <MobileBookingBar
+            price={selectedPrice}
+            isExact={selectedIsExact}
+            summary={priceSummary}
+            blockedReason={blockedReason}
+            bookHref={bookHref}
+          />
         ) : null}
 
         {/*

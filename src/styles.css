@@ -191,6 +191,27 @@
     scroll-behavior: smooth;
     /* Sticky header is 4.5rem; keep anchored targets clear of it. */
     scroll-padding-top: 5.5rem;
+
+    /*
+     * No sideways scrolling, ever.
+     *
+     * One element wider than the viewport turns every page on a phone into a
+     * thing that slides under the thumb, and it is never obvious which
+     * element is at fault — the symptom shows up pages away from the cause.
+     * This clips at the viewport so a stray overflow can never do it again.
+     *
+     * `clip`, NOT `hidden`, and the difference matters here. `overflow-x:
+     * hidden` makes this a scroll container, which silently kills
+     * `position: sticky` on every descendant — this site depends on it for
+     * the header, the desktop price sidebar and the continue bars on the
+     * booking steps. `clip` clips without becoming a scroll container, so all
+     * of that keeps working. Only the x axis: pairing `clip` with `visible`
+     * is legal, so vertical scrolling is untouched.
+     *
+     * Containers that are SUPPOSED to scroll sideways — the price and package
+     * tables — carry their own `overflow-x-auto` and are unaffected.
+     */
+    overflow-x: clip;
   }
 
   body {
@@ -574,6 +595,24 @@
 @media (prefers-reduced-motion: reduce) {
   .marquee-track-reverse {
     animation: none;
+  }
+}
+
+/*
+ * The floating WhatsApp button clears the phone booking bar.
+ *
+ * Both are fixed to the bottom at z-40, so on a booking page the button
+ * landed on top of "Book now" — the two most important taps on the page, one
+ * covering the other. The bar sets this attribute on the body while it is
+ * mounted. Above `lg` the bar never renders, so the offset is lifted there.
+ */
+body[data-booking-bar] .whatsapp-fab {
+  bottom: 6.75rem;
+}
+
+@media (min-width: 1024px) {
+  body[data-booking-bar] .whatsapp-fab {
+    bottom: 1.75rem;
   }
 }
 

@@ -160,6 +160,27 @@ export function resolvePropertyPrice(
   return withVat(chosen.priceExVat, rowId(chosen), true, null);
 }
 
+/**
+ * The cheapest price for a property type, whichever furnishing it is.
+ *
+ * Whole-home packages price on two axes, and the customer answers them one at
+ * a time. Between the two answers `resolvePropertyPrice` returns null, so the
+ * panel fell back to the catalogue-wide "from" figure and a customer who had
+ * just told us they have a three-bedroom villa watched the price sit at the
+ * studio price. This moves it the moment the first question is answered, and
+ * the exact figure replaces it when the second is.
+ */
+export function propertyFromPrice(serviceId: string, propertyType: string): ResolvedPrice | null {
+  const rows = propertyRowsFor(serviceId).filter(
+    (r) => r.label === propertyType && r.priceExVat !== null,
+  );
+  if (rows.length === 0) return null;
+  const cheapest = rows.reduce((a, b) =>
+    (b.priceExVat as number) < (a.priceExVat as number) ? b : a,
+  );
+  return withVat(cheapest.priceExVat as number, rowId(cheapest), true, null);
+}
+
 /** Whether a property row exists but was deliberately marked for quote. */
 export function propertyNeedsQuote(
   serviceId: string,

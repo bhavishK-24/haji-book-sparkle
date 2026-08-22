@@ -1,4 +1,5 @@
 import { isOnlineBookable } from "./index";
+import { priceFrom } from "./pricing";
 import { ALL_PHOTOS, type PhotoKey } from "./media";
 import { SERVICES } from "./service-catalogue.generated";
 import type { Service } from "./types";
@@ -221,6 +222,21 @@ export const quotedInCategory = (category: BookingCategory): Service[] =>
  */
 export const isEnquiryCategory = (category: BookingCategory): boolean =>
   bookableInCategory(category).length === 0;
+
+/**
+ * The lowest advertised price anywhere in a category, for "from AED x".
+ *
+ * Null where nothing in the category carries a figure — maintenance and
+ * marble are scoped on site, and a category card there has to say so rather
+ * than show a number borrowed from a neighbour.
+ */
+export const categoryFromPrice = (category: BookingCategory) => {
+  const prices = servicesInCategory(category)
+    .map((s) => priceFrom(s.id))
+    .filter((p): p is NonNullable<typeof p> => p !== null);
+  if (prices.length === 0) return null;
+  return prices.reduce((a, b) => (b.exclusive < a.exclusive ? b : a));
+};
 
 /** The category a given service belongs to, if any. */
 export const categoryForService = (serviceId: string): BookingCategory | undefined =>
