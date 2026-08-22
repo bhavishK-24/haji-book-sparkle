@@ -12,7 +12,7 @@ const SHORT_LABEL: Record<string, string> = {
   "Balcony Deep Cleaning": "Balcony",
 };
 
-function Mark({ value }: { value: ScopeInclusion | undefined }) {
+function Mark({ value, centred = true }: { value: ScopeInclusion | undefined; centred?: boolean }) {
   /* Grades are words, not marks — see ScopeInclusion. */
   if (value === "medium" || value === "intense") {
     return (
@@ -29,7 +29,11 @@ function Mark({ value }: { value: ScopeInclusion | undefined }) {
   if (value === "core" || value === "included") {
     return (
       <>
-        <Check className="mx-auto size-4 text-primary" strokeWidth={2.5} aria-hidden />
+        <Check
+          className={cn("size-4 text-primary", centred && "mx-auto")}
+          strokeWidth={2.5}
+          aria-hidden
+        />
         <span className="sr-only">Included</span>
       </>
     );
@@ -37,14 +41,22 @@ function Mark({ value }: { value: ScopeInclusion | undefined }) {
   if (value === "addon") {
     return (
       <>
-        <Plus className="mx-auto size-4 text-muted-foreground" strokeWidth={2} aria-hidden />
+        <Plus
+          className={cn("size-4 text-muted-foreground", centred && "mx-auto")}
+          strokeWidth={2}
+          aria-hidden
+        />
         <span className="sr-only">Available as a paid extra</span>
       </>
     );
   }
   return (
     <>
-      <Minus className="mx-auto size-4 text-muted-foreground/40" strokeWidth={2} aria-hidden />
+      <Minus
+        className={cn("size-4 text-muted-foreground/40", centred && "mx-auto")}
+        strokeWidth={2}
+        aria-hidden
+      />
       <span className="sr-only">Not included</span>
     </>
   );
@@ -54,9 +66,20 @@ function Mark({ value }: { value: ScopeInclusion | undefined }) {
  * Deep vs Intense, reduced to what actually differs.
  *
  * The scope matrix has 28 rows and the two packages agree on 25 of them.
- * Those are summarised once underneath as a shared baseline; the table itself
- * only carries rows where the answer changes, which is the only information
- * that helps someone choose.
+ * Those are summarised once underneath as a shared baseline; the comparison
+ * itself only carries rows where the answer changes, which is the only
+ * information that helps someone choose.
+ *
+ * Two layouts, because a comparison table has a floor on how narrow it can be
+ * and a phone is below it. At 34rem the table was wider than any phone, and
+ * `overflow-x-auto` around it was not the answer: it made the whole page drag
+ * sideways into white space, and a customer who never discovered they could
+ * scroll the table simply never saw the second column — which is the entire
+ * point of a comparison.
+ *
+ * So phones get the same rows as a stacked list, with both packages labelled
+ * under each item. Nothing is hidden, nothing scrolls, and the information is
+ * identical; only the shape changes. The table returns at `sm`, where it fits.
  */
 export function PackageComparison({ columns }: { columns: readonly string[] }) {
   const rows = packageComparison(columns);
@@ -65,8 +88,30 @@ export function PackageComparison({ columns }: { columns: readonly string[] }) {
 
   return (
     <div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[34rem] border-collapse text-left">
+      {/* Phones: one block per difference, both packages named. */}
+      <ul className="border-t border-foreground/15 sm:hidden">
+        {rows.map((row) => (
+          <li key={row.item} className="border-b border-border py-4">
+            <p className="text-[0.9375rem] font-semibold leading-snug">{row.item}</p>
+            <dl className="mt-3 flex flex-wrap gap-x-7 gap-y-2.5">
+              {row.values.map((v, i) => (
+                <div key={columns[i]} className="flex items-center gap-2">
+                  <dt className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                    {SHORT_LABEL[columns[i] ?? ""] ?? columns[i]}
+                  </dt>
+                  <dd className="flex items-center">
+                    <Mark value={v} centred={false} />
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </li>
+        ))}
+      </ul>
+
+      {/* Tablet and up, where a side-by-side table fits without scrolling. */}
+      <div className="hidden sm:block">
+        <table className="w-full border-collapse text-left">
           <caption className="sr-only">What each residential cleaning package includes</caption>
           <thead>
             <tr className="border-b border-foreground/15">

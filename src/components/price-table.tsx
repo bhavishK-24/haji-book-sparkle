@@ -49,7 +49,7 @@ export function PropertyPriceTable({
   return (
     <div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[22rem] border-collapse text-left text-sm">
+        <table className="w-full min-w-[18rem] border-collapse text-left text-sm">
           <caption className="sr-only">Prices by property type, excluding VAT</caption>
           <thead>
             <tr className="border-b border-foreground/15">
